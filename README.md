@@ -4,7 +4,7 @@ Repositório do grupo para os laboratórios da disciplina **Laboratório de Expe
 
 **Professor:** Danilo Maia
 **Grupo:** `<nome do grupo>`
-**Integrantes:** `<Integrante A>`, `<Integrante B>`, `<Integrante C>`
+**Integrantes:** `Bruna Costa Narkowisk`, `Thiago Branco`, `<Integrante C>`
 
 ---
 
