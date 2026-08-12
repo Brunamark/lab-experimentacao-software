@@ -1,0 +1,22 @@
+# Segredos - NUNCA commitar
+.env
+
+# Maven
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# CSV gerado pelo script (dado, não código)
+*.csv
+
+# Sistema operacional
+.DS_Store
+
+settings.json

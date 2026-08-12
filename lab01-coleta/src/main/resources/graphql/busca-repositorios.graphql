@@ -1,0 +1,15 @@
+query BuscaRepositorios($queryString: String!, $qtd: Int!, $cursor: String) {
+  search(query: $queryString, type: REPOSITORY, first: $qtd, after: $cursor) {
+    repositoryCount
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      ... on Repository {
+        nameWithOwner
+        stargazerCount
+      }
+    }
+  }
+}
