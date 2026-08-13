@@ -35,9 +35,8 @@ public class ColetaRunner implements CommandLineRunner {
     private final ColetaPullRequestsService coletaPullRequestsService;
 
     public ColetaRunner(ColetaService coletaService, CsvExportService csvExportService,
-                         AnaliseMaturidadeService analiseMaturidadeService,
                          AnaliseReleasesService analiseReleasesService,
-                         AnaliseAtualizacaoService analiseAtualizacaoService) {
+                         AnaliseAtualizacaoService analiseAtualizacaoService,
                          AnaliseMaturidadeService analiseMaturidadeService,
                          ColetaPullRequestsService coletaPullRequestsService) {
         this.coletaService = coletaService;
