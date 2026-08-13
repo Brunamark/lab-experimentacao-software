@@ -1,6 +1,7 @@
 package com.labes.coleta.runner;
 
 import com.labes.coleta.model.RepositorioMetrica;
+import com.labes.coleta.service.AnaliseMaturidadeService;
 import com.labes.coleta.service.ColetaService;
 import com.labes.coleta.service.CsvExportService;
 import org.slf4j.Logger;
@@ -23,10 +24,13 @@ public class ColetaRunner implements CommandLineRunner {
 
     private final ColetaService coletaService;
     private final CsvExportService csvExportService;
+    private final AnaliseMaturidadeService analiseMaturidadeService;
 
-    public ColetaRunner(ColetaService coletaService, CsvExportService csvExportService) {
+    public ColetaRunner(ColetaService coletaService, CsvExportService csvExportService,
+                         AnaliseMaturidadeService analiseMaturidadeService) {
         this.coletaService = coletaService;
         this.csvExportService = csvExportService;
+        this.analiseMaturidadeService = analiseMaturidadeService;
     }
 
     @Override
@@ -34,5 +38,17 @@ public class ColetaRunner implements CommandLineRunner {
         List<RepositorioMetrica> repositorios = coletaService.coletar();
         csvExportService.exportar(repositorios, ARQUIVO_SAIDA);
         log.info("Dados salvos em: {}", ARQUIVO_SAIDA);
+
+        var idadeMedia = analiseMaturidadeService.idadeMediaEmMeses(repositorios);
+        var idadeMediaTop15 = analiseMaturidadeService.idadeMediaTop15(repositorios);
+        var idadeMediaLast15 = analiseMaturidadeService.idadeMediaLast15(repositorios);
+        log.info("Idade média: {} meses | Idade média (top 15): {} meses | Idade média (last 15): {} meses",
+                idadeMedia,
+                idadeMediaTop15,
+                idadeMediaLast15);
+
+        var pushMedia = analiseMaturidadeService.mediaMesesDesdeUltimoPush(repositorios);
+        var pushMediaTop15 = analiseMaturidadeService.mediaMesesDesdeUltimoPushTop15(repositorios);
+        log.info("Meses desde último push (média): {} | (top 15): {}", pushMedia, pushMediaTop15);
     }
 }

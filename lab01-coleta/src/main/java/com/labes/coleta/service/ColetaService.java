@@ -9,14 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Orquestra a coleta: pagina os resultados da API até atingir o total
  * configurado (github.total-repos) e devolve a lista de repositórios coletados.
- *
- * Nesta issue (estrutura inicial), só mapeia nome + estrelas.
  */
 @Service
 public class ColetaService {
@@ -36,6 +37,7 @@ public class ColetaService {
         List<RepositorioMetrica> resultado = new ArrayList<>();
         String cursor = null;
         boolean hasNextPage = true;
+        Instant agora = Instant.now();
 
         int total = properties.getTotalRepos();
         int pageSize = properties.getPageSize();
@@ -51,7 +53,14 @@ public class ColetaService {
             SearchResult pagina = client.buscarPagina(QUERY_STRING, qtd, cursor);
 
             for (RepositoryNode node : pagina.nodes()) {
-                resultado.add(new RepositorioMetrica(node.nameWithOwner(), node.stargazerCount()));
+                long idadeEmMeses = ChronoUnit.MONTHS.between(
+                        node.createdAt().atZone(ZoneOffset.UTC).toLocalDate(),
+                        agora.atZone(ZoneOffset.UTC).toLocalDate());
+                long mesesDesdeUltimoPush = ChronoUnit.MONTHS.between(
+                        node.pushedAt().atZone(ZoneOffset.UTC).toLocalDate(),
+                        agora.atZone(ZoneOffset.UTC).toLocalDate());
+                resultado.add(new RepositorioMetrica(
+                        node.nameWithOwner(), node.stargazerCount(), idadeEmMeses, mesesDesdeUltimoPush));
             }
 
             hasNextPage = pagina.pageInfo().hasNextPage();
