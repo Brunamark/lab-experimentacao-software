@@ -13,6 +13,8 @@ public class GitHubProperties {
     private String token;
     private int totalRepos = 100;
     private int pageSize = 50;
+    private int anoInicioAnalise = 2022;
+    private int limiteRepositoriosAnalisePrs = 100;
 
     public String getToken() {
         return token;
@@ -36,5 +38,21 @@ public class GitHubProperties {
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public int getAnoInicioAnalise() {
+        return anoInicioAnalise;
+    }
+
+    public void setAnoInicioAnalise(int anoInicioAnalise) {
+        this.anoInicioAnalise = anoInicioAnalise;
+    }
+
+    public int getLimiteRepositoriosAnalisePrs() {
+        return limiteRepositoriosAnalisePrs;
+    }
+
+    public void setLimiteRepositoriosAnalisePrs(int limiteRepositoriosAnalisePrs) {
+        this.limiteRepositoriosAnalisePrs = limiteRepositoriosAnalisePrs;
     }
 }
