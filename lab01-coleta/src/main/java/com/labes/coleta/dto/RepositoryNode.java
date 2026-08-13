@@ -10,6 +10,11 @@ public record RepositoryNode(
         int stargazerCount,
         Instant createdAt,
         Instant updatedAt,
-        Instant pushedAt
+        Instant pushedAt,
+        Releases releases
 ) {
+
+    /** Conexão "releases" — só a contagem total nos interessa. */
+    public record Releases(int totalCount) {
+    }
 }

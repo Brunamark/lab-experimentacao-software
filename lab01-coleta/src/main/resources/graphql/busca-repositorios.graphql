@@ -12,6 +12,9 @@ query BuscaRepositorios($queryString: String!, $qtd: Int!, $cursor: String) {
         createdAt
         updatedAt
         pushedAt
+        releases {
+          totalCount
+        }
       }
     }
   }

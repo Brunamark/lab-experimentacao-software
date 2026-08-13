@@ -5,7 +5,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/** Calcula estatísticas de idade sobre os repositórios coletados. */
+/**
+ * Calcula estatísticas de idade sobre os repositórios coletados (RQ01).
+ *
+ * <p>As métricas de tempo desde o último push ficam em {@link AnaliseAtualizacaoService} (RQ04).
+ */
 @Service
 public class AnaliseMaturidadeService {
 
@@ -28,19 +32,5 @@ public class AnaliseMaturidadeService {
     /** Mesma idade média, mas só entre os 15 repositórios menos populares dos top 100 obtidos (mais estrelas). */
     public double idadeMediaLast15(List<RepositorioMetrica> repositorios) {
         return idadeMediaEmMeses(repositorios.reversed().stream().limit(TOP_N).toList());
-    }
-
-    /** Tempo médio, em meses, desde o último push — quanto maior, mais tempo sem atividade (possível abandono). */
-    public double mediaMesesDesdeUltimoPush(List<RepositorioMetrica> repositorios) {
-        var media = repositorios.stream()
-                .mapToLong(RepositorioMetrica::mesesDesdeUltimoPush)
-                .average()
-                .orElse(0);
-        return Math.round(media * 100.0) / 100.0;
-    }
-
-    /** Mesma métrica de inatividade, mas só entre os 15 repositórios mais populares. */
-    public double mediaMesesDesdeUltimoPushTop15(List<RepositorioMetrica> repositorios) {
-        return mediaMesesDesdeUltimoPush(repositorios.stream().limit(TOP_N).toList());
     }
 }
