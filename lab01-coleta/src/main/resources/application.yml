@@ -1,0 +1,14 @@
+# Lab01 - Configuração da coleta de dados
+github:
+  token: ${GITHUB_TOKEN}
+  total-repos: ${TOTAL_REPOS}     
+  page-size: ${PAGE_SIZE}         # máximo permitido pela API é 100
+
+spring:
+  main:
+    # Não precisamos de servidor web: é um script/batch que roda e encerra
+    web-application-type: none
+
+logging:
+  level:
+    com.labes.coleta: INFO
