@@ -13,14 +13,16 @@ import java.util.List;
 @Component
 public class CsvExportService {
 
-    private static final String CABECALHO = "nome,estrelas";
+    private static final String CABECALHO = "nome,estrelas,idade_meses,meses_desde_ultimo_push";
 
     public void exportar(List<RepositorioMetrica> repositorios, String caminho) throws IOException {
         StringBuilder sb = new StringBuilder(CABECALHO).append('\n');
 
         for (RepositorioMetrica r : repositorios) {
             sb.append('"').append(r.nome()).append("\",")
-                    .append(r.estrelas())
+                    .append(r.estrelas()).append(',')
+                    .append(r.idadeEmMeses()).append(',')
+                    .append(r.mesesDesdeUltimoPush())
                     .append('\n');
         }
 

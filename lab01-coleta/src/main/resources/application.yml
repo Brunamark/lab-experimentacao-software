@@ -1,8 +1,8 @@
 # Lab01 - Configuração da coleta de dados
 github:
   token: ${GITHUB_TOKEN}
-  total-repos: ${TOTAL_REPOS}     
-  page-size: ${PAGE_SIZE}         # máximo permitido pela API é 100
+  total-repos: ${TOTAL_REPOS:100}
+  page-size: ${PAGE_SIZE:100}         # máximo permitido pela API é 100
 
 spring:
   main:

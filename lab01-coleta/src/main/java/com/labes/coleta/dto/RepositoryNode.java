@@ -1,11 +1,15 @@
 package com.labes.coleta.dto;
 
+import java.time.Instant;
+
 /**
  * Representa um nó "Repository" dentro de search.nodes.
- * Nesta issue (estrutura inicial), traz apenas nome e nº de estrelas.
  */
 public record RepositoryNode(
         String nameWithOwner,
-        int stargazerCount
+        int stargazerCount,
+        Instant createdAt,
+        Instant updatedAt,
+        Instant pushedAt
 ) {
 }

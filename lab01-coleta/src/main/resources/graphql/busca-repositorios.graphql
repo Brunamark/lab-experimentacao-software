@@ -9,6 +9,9 @@ query BuscaRepositorios($queryString: String!, $qtd: Int!, $cursor: String) {
       ... on Repository {
         nameWithOwner
         stargazerCount
+        createdAt
+        updatedAt
+        pushedAt
       }
     }
   }
