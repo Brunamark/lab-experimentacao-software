@@ -2,7 +2,11 @@
 github:
   token: ${GITHUB_TOKEN}
   total-repos: ${TOTAL_REPOS:100}
-  page-size: ${PAGE_SIZE:100}         # máximo permitido pela API é 100
+  # A API aceita até 100, mas com o bloco releases aninhado o GitHub estoura o próprio
+  # tempo limite e responde 502. Repositórios caros de calcular (electron, tauri) derrubam
+  # qualquer página que os contenha: com 100 falha sempre, com 25 falha na página deles.
+  # Com 10 eles se separam e a coleta completa (100 repos em ~36s).
+  page-size: ${PAGE_SIZE:10}
 
 spring:
   main:

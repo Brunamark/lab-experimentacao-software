@@ -6,6 +6,8 @@ import com.labes.coleta.dto.GraphQLRequest;
 import com.labes.coleta.dto.GraphQLResponse;
 import com.labes.coleta.dto.IssueCountResult;
 import com.labes.coleta.dto.SearchResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -30,7 +34,16 @@ import java.util.Map;
 @Component
 public class GitHubGraphQLClient {
 
+    private static final Logger log = LoggerFactory.getLogger(GitHubGraphQLClient.class);
     private static final String GRAPHQL_URL = "https://api.github.com/graphql";
+
+    /**
+     * A API do GitHub devolve 502/504 de forma intermitente em queries com conexões aninhadas
+     * (releases, pullRequests, issues). São falhas transitórias: repetir a mesma requisição
+     * costuma funcionar, então sem retry qualquer coleta longa morre no meio.
+     */
+    private static final int MAX_TENTATIVAS = 5;
+    private static final long ESPERA_INICIAL_MS = 2_000;
 
     private final RestTemplate restTemplate;
     private final GitHubProperties properties;
@@ -71,6 +84,29 @@ public class GitHubGraphQLClient {
 
         HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
 
+        long espera = ESPERA_INICIAL_MS;
+
+        for (int tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
+            try {
+                return enviar(entity);
+            } catch (HttpServerErrorException | ResourceAccessException e) {
+                if (tentativa == MAX_TENTATIVAS) {
+                    throw new IllegalStateException(
+                            "API do GitHub falhou nas %d tentativas. Cursor da página: %s"
+                                    .formatted(MAX_TENTATIVAS, cursor), e);
+                }
+                log.warn("Falha transitória da API ({}). Tentativa {}/{} — repetindo em {} ms.",
+                        e.getClass().getSimpleName(), tentativa, MAX_TENTATIVAS, espera);
+                aguardar(espera);
+                espera *= 2;
+            }
+        }
+
+        throw new IllegalStateException("Fluxo inalcançável: laço de tentativas encerrado sem resultado.");
+    }
+
+    /** Envia a requisição e valida a resposta. Erros 5xx sobem para o laço de retry. */
+    private SearchResult enviar(HttpEntity<GraphQLRequest> entity) {
         ResponseEntity<GraphQLResponse> response =
                 restTemplate.postForEntity(GRAPHQL_URL, entity, GraphQLResponse.class);
 
@@ -84,6 +120,15 @@ public class GitHubGraphQLClient {
         }
 
         return body.data().search();
+    }
+
+    private void aguardar(long milissegundos) {
+        try {
+            Thread.sleep(milissegundos);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Coleta interrompida durante a espera do retry.", e);
+        }
     }
 
     /**
