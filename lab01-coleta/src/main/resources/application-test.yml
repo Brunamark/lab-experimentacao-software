@@ -1,0 +1,19 @@
+# Perfil "test" - ativado pelo CucumberSpringConfig (@ActiveProfiles("test"))
+github:
+  graphql:
+    url: https://api.github.com/graphql
+  rest:
+    url: https://api.github.com
+  token: ${GITHUB_TOKEN}
+
+coleta:
+  total-repos: ${TOTAL_REPOS:20}
+  page-size: ${PAGE_SIZE:10}
+  
+spring:
+  main:
+    web-application-type: none
+
+logging:
+  level:
+    com.labes.coleta: WARN
