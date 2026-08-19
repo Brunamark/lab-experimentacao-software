@@ -15,6 +15,7 @@ public class GitHubProperties {
     private int pageSize = 50;
     private int anoInicioAnalise = 2022;
     private int limiteRepositoriosAnalisePrs = 100;
+    private int amostraPrsTamanho = 10;
 
     public String getToken() {
         return token;
@@ -54,5 +55,13 @@ public class GitHubProperties {
 
     public void setLimiteRepositoriosAnalisePrs(int limiteRepositoriosAnalisePrs) {
         this.limiteRepositoriosAnalisePrs = limiteRepositoriosAnalisePrs;
+    }
+
+    public int getAmostraPrsTamanho() {
+        return amostraPrsTamanho;
+    }
+
+    public void setAmostraPrsTamanho(int amostraPrsTamanho) {
+        this.amostraPrsTamanho = amostraPrsTamanho;
     }
 }
