@@ -2,6 +2,7 @@ package com.labes.coleta.service;
 
 import com.labes.coleta.model.RepositorioMetrica;
 import com.labes.coleta.model.TendenciaAnualPullRequests;
+import com.labes.coleta.model.TendenciaAnualTamanhoPR;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ public class CsvExportService {
     private static final String CABECALHO =
             "nome,estrelas,idade_meses,total_releases,ultimo_push,ultima_atualizacao,dias_desde_ultimo_push";
     private static final String CABECALHO_TENDENCIA_PRS = "ano,prs_criadas,prs_aceitas,taxa_aceitacao";
+    private static final String CABECALHO_TAMANHO_PRS = "ano,tamanho_medio_linhas,amostra_prs";
 
     public void exportar(List<RepositorioMetrica> repositorios, String caminho) throws IOException {
         StringBuilder sb = new StringBuilder(CABECALHO).append('\n');
@@ -44,6 +46,19 @@ public class CsvExportService {
                     .append(t.prsCriadas()).append(',')
                     .append(t.prsAceitas()).append(',')
                     .append(t.taxaAceitacao())
+                    .append('\n');
+        }
+
+        Files.writeString(Path.of(caminho), sb.toString(), StandardCharsets.UTF_8);
+    }
+
+    public void exportarTendenciaTamanhoPRs(List<TendenciaAnualTamanhoPR> tendencia, String caminho) throws IOException {
+        StringBuilder sb = new StringBuilder(CABECALHO_TAMANHO_PRS).append('\n');
+
+        for (TendenciaAnualTamanhoPR t : tendencia) {
+            sb.append(t.ano()).append(',')
+                    .append(t.tamanhoMedioLinhas()).append(',')
+                    .append(t.amostraPRs())
                     .append('\n');
         }
 
