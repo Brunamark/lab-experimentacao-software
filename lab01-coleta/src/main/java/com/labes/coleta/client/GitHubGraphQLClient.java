@@ -4,7 +4,9 @@ import com.labes.coleta.config.GitHubProperties;
 import com.labes.coleta.dto.GraphQLBatchResponse;
 import com.labes.coleta.dto.GraphQLRequest;
 import com.labes.coleta.dto.GraphQLResponse;
+import com.labes.coleta.dto.GraphQLSizeBatchResponse;
 import com.labes.coleta.dto.IssueCountResult;
+import com.labes.coleta.dto.PullRequestSizeResult;
 import com.labes.coleta.dto.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +152,34 @@ public class GitHubGraphQLClient {
                 restTemplate.postForEntity(GRAPHQL_URL, entity, GraphQLBatchResponse.class);
 
         GraphQLBatchResponse body = response.getBody();
+
+        if (body == null || body.data() == null) {
+            throw new IllegalStateException("Resposta vazia ou inválida da API do GitHub.");
+        }
+        if (body.errors() != null && !body.errors().isEmpty()) {
+            throw new IllegalStateException("Erro retornado pela API GraphQL: " + body.errors());
+        }
+
+        return body.data();
+    }
+
+    /**
+     * Como {@link #buscarContagensEmLote}, mas para queries que retornam PRs de verdade
+     * (nodes com additions/deletions), não só uma contagem.
+     */
+    public Map<String, PullRequestSizeResult> buscarTamanhosEmLote(String queryMontada) {
+        GraphQLRequest requestBody = new GraphQLRequest(queryMontada, Map.of());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(properties.getToken());
+
+        HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<GraphQLSizeBatchResponse> response =
+                restTemplate.postForEntity(GRAPHQL_URL, entity, GraphQLSizeBatchResponse.class);
+
+        GraphQLSizeBatchResponse body = response.getBody();
 
         if (body == null || body.data() == null) {
             throw new IllegalStateException("Resposta vazia ou inválida da API do GitHub.");
