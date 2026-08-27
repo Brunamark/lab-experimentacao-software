@@ -43,9 +43,9 @@ Além do enunciado, o grupo propôs duas Questões de Pesquisa de Validação (R
 
 - **RQV01** — A extração via API GraphQL do GitHub cobre a totalidade dos itens esperados, sem lacunas de paginação, e produz resultados idênticos em execuções repetidas nas mesmas condições?
 - **RQV02** — A extração via API GraphQL do GitHub evita chamadas HTTP redundantes e recupera-se corretamente de falhas transitórias (5xx) via retry, sem contabilizar a tentativa de recuperação como uma chamada redundante?
-- **RQB01** — Com enfoque em criação e aceitação de Pull Requests, como a adoção de ferramentas de Inteligência Artifical tem impactado contribuições em projetos open-source nos últimos quatro anos? 
+- **RQB01** — Com enfoque em criação e aceitação de Pull Requests, como a adoção de ferramentas de Inteligência Artificial tem impactado contribuições em projetos open-source nos últimos quatro anos?
 - **RQB02** — Com o auxílio de ferramentas de Inteligência Artificial, nos últimos quatro anos, Pull Requests têm tido um aumento em quantidade de linhas de código, consequentemente atendendo um maior número de pendências de uma vez?
-- **RQB03** Como consequência da agilização do processo de desenvolvimento, fruto do uso de IA's, issues tem sido fechadas com uma menor quantidade de commits atrelados?
+- **RQB03** — Como consequência da agilização do processo de desenvolvimento, fruto do uso de IAs, issues têm sido fechadas com uma menor quantidade de commits atrelados?
 
 O detalhamento da metodologia usada para validação dos requisitos adicionais se encontra na Seção 3.6.
 
@@ -133,6 +133,19 @@ A tabela seguinte apresenta as métricas adicionais definidas pelo grupo para va
 | RQV02 | `taxa_redundancia` | `chamadas_redundantes / total_chamadas` | Proporção | CallLog.java |
 | RQV02 | `tentativas_de_retry` | Repetições associadas a uma chamada que falhou (5xx) | Nº de tentativas | GitHubGraphQLClient.java |
 
+A tabela seguinte apresenta as métricas das Questões de Pesquisa Bônus (RQB01–RQB03), organizadas segundo a árvore GQM da Seção 3.6.1. Diferentemente das RQ01–RQ07, todas cobrem o intervalo de 2022 a 2026 e são reportadas por ano, não por repositório.
+
+| RQ | Métrica | Definição Operacional | Unidade | Ferramenta / Fonte |
+|---|---|---|---|---|
+| RQB01 | `prs_criadas`, `prs_aceitas` | Contagens anuais de PRs criados e de PRs com merge | Nº de PRs | `tendencia_prs.csv`, via GraphQL |
+| RQB01 | `taxa_aceitacao` | `prs_aceitas / prs_criadas` | % | Derivada do mesmo CSV |
+| RQB02 | `tamanho_medio_linhas` | Média de `additions + deletions` dos PRs aceitos amostrados no ano | Linhas | `tendencia_tamanho_prs.csv`, via GraphQL |
+| RQB03 | `commits_medios_por_issue` | Soma dos commits dos PRs que fecharam as issues amostradas, dividida pelo nº de issues amostradas | Commits/issue | `commits_por_issue.csv`, via GraphQL |
+| RQB03 | `commits_medianos_por_issue` | Mediana da mesma amostra | Commits/issue | `commits_por_issue.csv`, via GraphQL |
+| RQB03 | `taxa_resolucao_por_pr` | `issues_com_pr_universo / issues_fechadas_universo` — contagens totais da população, não amostradas | % | Derivada do mesmo CSV |
+
+A RQB03 é a única métrica do trabalho reportada com média **e** mediana. A decisão foi tomada a partir de evidência, não por precaução: no piloto de validação, o ano de 2025 apresentou média de 8,32 commits por issue contra 2,15 em 2024, mas a mediana dos dois anos era praticamente a mesma (2,0 e 1,0). O pico era efeito de uma única issue fechada por um Pull Request muito grande. Reportar apenas a média teria produzido, no texto final, a descrição de um fenômeno que não existe.
+
 ### 3.6 Inovações Propostas pelo Grupo (30% da nota)
 
 Como contribuição além do enunciado, o grupo tratou o próprio pipeline de coleta de dados como objeto de verificação, e não apenas como um meio de obter os dados das RQ01–RQ07. Foram propostas duas Questões de Pesquisa de Validação (RQV01 e RQV02), avaliadas por meio de cenários automatizados de teste de comportamento (Cucumber) executados contra a API real do GitHub, com o perfil `realtest` e o comando:
@@ -158,6 +171,45 @@ Os requisitos adicionais propostos tem, como principal objetivo, analisar o impa
 **RQV02** está relacionada ao uso eficiente da API e à resiliência da coleta diante de falhas transitórias, e foi avaliada por dois cenários reais: coleta sem falhas e sem chamadas redundantes; e coleta real sem falhas e sem tentativas de retry desnecessárias.
 
 A instrumentação dessas métricas está implementada em `ColetaSteps.java`, `Hooks.java` e `CallLog.java` (asserções) e em `GitHubGraphQLClient.java` (tratamento de retry para respostas 5xx). Os resultados obtidos e sua discussão aparecem nas Seções 4.1, 4.3 e 5.
+
+### 3.6.1 Árvore GQM das questões bônus
+
+As três Questões de Pesquisa Bônus derivam de um único objetivo de medição, formalizado abaixo no template GQM (*Goal–Question–Metric*) de Basili. A formalização é necessária porque, diferentemente das RQ01–RQ07, cujas métricas vêm do enunciado, as métricas das RQBs foram definidas pelo próprio grupo: a árvore torna explícito por que cada medida responde à pergunta que se propõe a responder, e quais medidas são de controle e não de resultado.
+
+**Goal.** Analisar o histórico de contribuição (Pull Requests e issues) de repositórios open-source populares, com o propósito de caracterizar sua evolução ao longo do tempo, com respeito ao volume e ao tamanho das contribuições aceitas e ao esforço em commits associado ao fechamento de issues, do ponto de vista de engenheiros de software, no contexto dos 1000 repositórios mais populares do GitHub entre 2022 e 2026 — intervalo que abrange a popularização das ferramentas de Inteligência Artificial generativa aplicadas ao desenvolvimento.
+
+```mermaid
+graph TD
+    G["<b>GOAL</b><br/>Caracterizar a evolução 2022–2026 da contribuição<br/>em repositórios populares, no contexto da adoção de IA"]
+
+    G --> Q1["<b>Q1 — RQB01</b><br/>O volume e a taxa de aceitação<br/>de PRs mudaram ao longo dos anos?"]
+    G --> Q2["<b>Q2 — RQB02</b><br/>Os PRs aceitos ficaram maiores,<br/>entregando mais de uma vez?"]
+    G --> Q3["<b>Q3 — RQB03</b><br/>Issues passaram a ser fechadas com<br/>menos commits atrelados?"]
+
+    Q1 --> M11["M1.1 prs_criadas por ano"]
+    Q1 --> M12["M1.2 prs_aceitas por ano"]
+    Q1 --> M13["M1.3 taxa_aceitacao = M1.2 ÷ M1.1"]
+
+    Q2 --> M21["M2.1 tamanho_medio_linhas<br/>média de additions + deletions"]
+    Q2 --> M22["M2.2 amostra_prs (n do ano)"]
+
+    Q3 --> M31["M3.1 commits_medios_por_issue"]
+    Q3 --> M32["M3.2 commits_medianos_por_issue"]
+    Q3 --> M33["M3.3 issues_analisadas (amostra)"]
+    Q3 --> M34["M3.4 issues_com_pr_universo"]
+    Q3 --> M35["M3.5 issues_fechadas_universo"]
+    Q3 --> M36["M3.6 taxa_resolucao_por_pr = M3.4 ÷ M3.5"]
+```
+
+**Métricas de resultado e métricas de controle.** Nem toda métrica da árvore responde à pergunta: algumas existem para impedir que as outras sejam mal lidas.
+
+| Métrica | Papel |
+|---|---|
+| M1.3, M2.1, M3.1, M3.2 | **Resultado** — respondem diretamente às questões |
+| M2.2, M3.3 | **Controle** — tamanho da amostra que sustenta cada média |
+| M3.6 | **Controle** — que fatia das issues fechadas a M3.1 descreve |
+
+A M3.6 é a mais importante das três de controle. A média de commits por issue (M3.1) cobre apenas as issues fechadas com Pull Request vinculado, e essa fatia **varia entre os anos**. Sem reportar M3.6 ao lado, uma variação em M3.1 poderia ser lida como mudança no esforço de desenvolvimento quando, na verdade, é mudança na forma como as issues passaram a ser fechadas. As duas são, por isso, sempre reportadas juntas — na tabela de resultados e no gráfico da Seção 4.2.
 
 ---
 
