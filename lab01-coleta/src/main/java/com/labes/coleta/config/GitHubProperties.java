@@ -59,6 +59,30 @@ public class GitHubProperties {
         this.pageSize = pageSize;
     }
 
+    public int getAnoInicioAnalise() {
+        return anoInicioAnalise;
+    }
+
+    public void setAnoInicioAnalise(int anoInicioAnalise) {
+        this.anoInicioAnalise = anoInicioAnalise;
+    }
+
+    public int getLimiteRepositoriosAnalisePrs() {
+        return limiteRepositoriosAnalisePrs;
+    }
+
+    public void setLimiteRepositoriosAnalisePrs(int limiteRepositoriosAnalisePrs) {
+        this.limiteRepositoriosAnalisePrs = limiteRepositoriosAnalisePrs;
+    }
+
+    public int getAmostraPrsTamanho() {
+        return amostraPrsTamanho;
+    }
+
+    public void setAmostraPrsTamanho(int amostraPrsTamanho) {
+        this.amostraPrsTamanho = amostraPrsTamanho;
+    }
+
     public record ApiProperties(String url) {
     }
 }

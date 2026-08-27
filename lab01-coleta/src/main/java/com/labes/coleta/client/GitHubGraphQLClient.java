@@ -148,7 +148,7 @@ public class GitHubGraphQLClient {
         HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<GraphQLBatchResponse> response =
-                restTemplate.postForEntity(GRAPHQL_URL, entity, GraphQLBatchResponse.class);
+            restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLBatchResponse.class);
 
         GraphQLBatchResponse body = response.getBody();
 
@@ -176,7 +176,7 @@ public class GitHubGraphQLClient {
         HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<GraphQLSizeBatchResponse> response =
-                restTemplate.postForEntity(GRAPHQL_URL, entity, GraphQLSizeBatchResponse.class);
+            restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLSizeBatchResponse.class);
 
         GraphQLSizeBatchResponse body = response.getBody();
 
