@@ -39,12 +39,15 @@ Hipóteses informais do grupo, confrontadas com a amostra disponível:
 
 As hipóteses de RQ02, RQ05, RQ06 e RQ07 não podem ser confrontadas com este arquivo, pois seus atributos não estão presentes no CSV.
 
-Além do enunciado, o grupo propôs duas Questões de Pesquisa de Validação (RQV1 e RQV2), voltadas não às características dos repositórios em si, mas à confiabilidade do próprio pipeline de coleta de dados construído para responder às RQ01–RQ07:
+Além do enunciado, o grupo propôs duas Questões de Pesquisa de Validação (RQV1 e RQV2) e duas Questões de Pesquisa Bônus (RQB01 e RQB02). As de primeiro tipo são voltadas não às características dos repositórios em si, mas à confiabilidade do próprio pipeline de coleta de dados construído para responder às RQ01–RQ07, já as segundas buscam analisar impactos na adoção de ferramentas de Inteligência Artificial à cultura de desenvolvimento. Seguem as questões em detalhe:
 
-- **RQV1** — A extração via API GraphQL do GitHub cobre a totalidade dos itens esperados, sem lacunas de paginação, e produz resultados idênticos em execuções repetidas nas mesmas condições?
-- **RQV2** — A extração via API GraphQL do GitHub evita chamadas HTTP redundantes e recupera-se corretamente de falhas transitórias (5xx) via retry, sem contabilizar a tentativa de recuperação como uma chamada redundante?
+- **RQV01** — A extração via API GraphQL do GitHub cobre a totalidade dos itens esperados, sem lacunas de paginação, e produz resultados idênticos em execuções repetidas nas mesmas condições?
+- **RQV02** — A extração via API GraphQL do GitHub evita chamadas HTTP redundantes e recupera-se corretamente de falhas transitórias (5xx) via retry, sem contabilizar a tentativa de recuperação como uma chamada redundante?
+- **RQB01** — Com enfoque em criação e aceitação de Pull Requests, como a adoção de ferramentas de Inteligência Artifical tem impactado contribuições em projetos open-source nos últimos quatro anos? 
+- **RQB02** — Com o auxílio de ferramentas de Inteligência Artificial, nos últimos quatro anos, Pull Requests têm tido um aumento em quantidade de linhas de código, consequentemente atendendo um maior número de pendências de uma vez?
+- **RQB03** Como consequência da agilização do processo de desenvolvimento, fruto do uso de IA's, issues tem sido fechadas com uma menor quantidade de commits atrelados?
 
-O detalhamento da metodologia usada para validar RQV1 e RQV2 está na Seção 3.6.
+O detalhamento da metodologia usada para validação dos requisitos adicionais se encontra na Seção 3.6.
 
 ---
 
@@ -54,7 +57,7 @@ Este relatório documenta o Lab01 da disciplina, primeiro laboratório do semest
 
 Como o CSV analisado não possui a linguagem primária dos repositórios, RQ05 e RQ07 não são respondidas nesta versão do relatório. Consequentemente, não foi necessário selecionar uma fonte externa de ranking de linguagens para interpretar os dados disponíveis.
 
-Como base metodológica para a validação da confiabilidade do pipeline de coleta (RQV1 e RQV2), o grupo utilizou cenários de teste de comportamento (BDD) escritos em Cucumber/Gherkin, executados contra a API real do GitHub sob o perfil `realtest`, tratando o próprio processo de extração de dados como objeto de verificação, e não apenas os dados extraídos.
+Como base metodológica para a validação da confiabilidade do pipeline de coleta (RQV01 e RQV02), o grupo utilizou cenários de teste de comportamento (BDD) escritos em Cucumber/Gherkin, executados contra a API real do GitHub sob o perfil `realtest`, tratando o próprio processo de extração de dados como objeto de verificação, e não apenas os dados extraídos.
 
 ---
 
@@ -84,7 +87,7 @@ O processo seguiu a estrutura de sprints definida no enunciado (Lab01S01 a S03 +
 |---|---|---|---|
 | Lab01S01 | Consulta GraphQL para 100 repositórios; requisição automática; GitHub Projects criado com colunas e limite de WIP definidos. | Grupo | A definir no board |
 | Lab01S02 | Paginação para a amostra de 100 repositórios; dados exportados em CSV; primeira versão do relatório com hipóteses informais; board atualizado com primeiro snapshot. | Grupo | A definir no board |
-| Lab01S03 | Análise descritiva dos atributos disponíveis; validação automatizada do pipeline de coleta (cenários RQV1/RQV2) como inovação metodológica. | Grupo | A definir no board |
+| Lab01S03 | Análise descritiva dos atributos disponíveis; validação automatizada do pipeline de coleta (cenários RQV01/RQV02) como inovação metodológica. | Grupo | A definir no board |
 | Relatório Final | Elaboração do documento final, incluindo print do board e política de WIP em uso. | Grupo | A definir no board |
 
 **Configuração do processo**
@@ -124,15 +127,15 @@ A tabela seguinte apresenta as métricas adicionais definidas pelo grupo para va
 
 | RQ | Métrica | Definição Operacional | Unidade | Ferramenta / Fonte |
 |---|---|---|---|---|
-| RQV1 | `cobertura_paginacao_pct` | `itens_coletados / itens_esperados × 100` | % | CallLog / ColetaSteps.java (Cucumber) |
-| RQV1 | `taxa_idempotencia_pct` | Percentual de itens iguais, por posição, entre duas execuções | % | CallLog / ColetaSteps.java (Cucumber) |
-| RQV2 | `chamadas_redundantes` | Requisições que repetem uma assinatura HTTP já registrada | Nº de chamadas | CallLog.java |
-| RQV2 | `taxa_redundancia` | `chamadas_redundantes / total_chamadas` | Proporção | CallLog.java |
-| RQV2 | `tentativas_de_retry` | Repetições associadas a uma chamada que falhou (5xx) | Nº de tentativas | GitHubGraphQLClient.java |
+| RQV01 | `cobertura_paginacao_pct` | `itens_coletados / itens_esperados × 100` | % | CallLog / ColetaSteps.java (Cucumber) |
+| RQV01 | `taxa_idempotencia_pct` | Percentual de itens iguais, por posição, entre duas execuções | % | CallLog / ColetaSteps.java (Cucumber) |
+| RQV02 | `chamadas_redundantes` | Requisições que repetem uma assinatura HTTP já registrada | Nº de chamadas | CallLog.java |
+| RQV02 | `taxa_redundancia` | `chamadas_redundantes / total_chamadas` | Proporção | CallLog.java |
+| RQV02 | `tentativas_de_retry` | Repetições associadas a uma chamada que falhou (5xx) | Nº de tentativas | GitHubGraphQLClient.java |
 
 ### 3.6 Inovações Propostas pelo Grupo (30% da nota)
 
-Como contribuição além do enunciado, o grupo tratou o próprio pipeline de coleta de dados como objeto de verificação, e não apenas como um meio de obter os dados das RQ01–RQ07. Foram propostas duas Questões de Pesquisa de Validação (RQV1 e RQV2), avaliadas por meio de cenários automatizados de teste de comportamento (Cucumber) executados contra a API real do GitHub, com o perfil `realtest` e o comando:
+Como contribuição além do enunciado, o grupo tratou o próprio pipeline de coleta de dados como objeto de verificação, e não apenas como um meio de obter os dados das RQ01–RQ07. Foram propostas duas Questões de Pesquisa de Validação (RQV01 e RQV02), avaliadas por meio de cenários automatizados de teste de comportamento (Cucumber) executados contra a API real do GitHub, com o perfil `realtest` e o comando:
 
 ```bash
 cd lab01-coleta
@@ -148,9 +151,11 @@ mvn clean \
 
 O relatório Surefire dessa execução registrou oito cenários analisados, cinco executados, três ignorados (pertencentes à funcionalidade de fallback, não interpretados como resultados desta execução), nenhuma falha e nenhum erro.
 
-**RQV1** está relacionada à completude e à reprodutibilidade da coleta, e foi avaliada por três cenários: coleta de 100 repositórios com páginas de 10; encerramento natural quando `hasNextPage` é falso; e duas execuções da mesma coleta com os mesmos parâmetros.
+Os requisitos adicionais propostos tem, como principal objetivo, analisar o impacto que a adoção de ferramentas de inteligência artificial tem tido na cultura de desenvolvimento e nos hábitos de desenvolvedores. Todos os requisitos adicionais cobrem um período de quatro anos de ciclos de desenvolvimento — de 2022 à 2026 — compreendidos pelo grupo como intervalo capaz de englobar o início da popularização do uso de IA até seu atual estado de uso constante e proeminente observável hoje em dia.
 
-**RQV2** está relacionada ao uso eficiente da API e à resiliência da coleta diante de falhas transitórias, e foi avaliada por dois cenários reais: coleta sem falhas e sem chamadas redundantes; e coleta real sem falhas e sem tentativas de retry desnecessárias.
+**RQV01** está relacionada à completude e à reprodutibilidade da coleta, e foi avaliada por três cenários: coleta de 100 repositórios com páginas de 10; encerramento natural quando `hasNextPage` é falso; e duas execuções da mesma coleta com os mesmos parâmetros.
+
+**RQV02** está relacionada ao uso eficiente da API e à resiliência da coleta diante de falhas transitórias, e foi avaliada por dois cenários reais: coleta sem falhas e sem chamadas redundantes; e coleta real sem falhas e sem tentativas de retry desnecessárias.
 
 A instrumentação dessas métricas está implementada em `ColetaSteps.java`, `Hooks.java` e `CallLog.java` (asserções) e em `GitHubGraphQLClient.java` (tratamento de retry para respostas 5xx). Os resultados obtidos e sua discussão aparecem nas Seções 4.1, 4.3 e 5.
 
@@ -187,7 +192,7 @@ O repositório com mais estrelas na amostra é `codecrafters-io/build-your-own-x
 
 Esses dados respondem descritivamente às dimensões de idade, releases e recência, mas não permitem avaliar contribuição externa, linguagens ou issues, pois essas variáveis não aparecem no arquivo.
 
-Como evidência de que o pipeline executou a coleta da amostra de 100 repositórios, a validação automatizada (RQV1/RQV2) registrou os seguintes resultados nos cenários de paginação e idempotência:
+Como evidência de que o pipeline executou a coleta da amostra de 100 repositórios, a validação automatizada (RQV01/RQV02) registrou os seguintes resultados nos cenários de paginação e idempotência:
 
 **Paginação (por cenário)**
 
@@ -218,7 +223,7 @@ Para os cenários reais de coleta sem falhas, o CSV de métricas registrou zero 
 
 Não foram incluídos gráficos nesta versão. A análise foi apresentada em tabelas descritivas porque o CSV contém apenas 100 registros e quatro dimensões analíticas principais: estrelas, idade, releases e recência do push. Gráficos para RQ02, RQ05, RQ06 e RQ07 exigiriam dados que não estão presentes no arquivo.
 
-Para RQV1 e RQV2, os resultados são binários/percentuais por cenário (aprovado/reprovado, percentuais de idempotência e redundância) e foram reportados diretamente nas tabelas da Seção 4.1, sem necessidade de visualização gráfica adicional.
+Para RQV01 e RQV02, os resultados são binários/percentuais por cenário (aprovado/reprovado, percentuais de idempotência e redundância) e foram reportados diretamente nas tabelas da Seção 4.1, sem necessidade de visualização gráfica adicional.
 
 ### 4.3 Discussão
 
@@ -252,15 +257,15 @@ Não respondida. O CSV não contém o total de issues nem a quantidade de issues
 
 Não respondida. A comparação exigiria, no mínimo, linguagem primária, pull requests aceitas e agrupamento das métricas por linguagem, que não estão disponíveis no arquivo.
 
-**RQV1 — completude e reprodutibilidade**
+**RQV01 — completude e reprodutibilidade**
 
-Os testes apoiam parcialmente a RQV1: a paginação percorreu as páginas observadas sem repetir chamadas, a coleta encerrou corretamente após a indicação de ausência de próxima página, e duas execuções produziram resultados idênticos, com idempotência de 100%. A hipótese de completude, no entanto, não pode ser considerada totalmente comprovada apenas com esses artefatos, pois o cenário de paginação executado verifica somente que pelo menos um repositório foi coletado — não há comparação explícita entre `itens_coletados` e `itens_esperados`, e a métrica `cobertura_paginacao_pct` não apareceu no CSV desta execução.
+Os testes apoiam parcialmente a RQV01: a paginação percorreu as páginas observadas sem repetir chamadas, a coleta encerrou corretamente após a indicação de ausência de próxima página, e duas execuções produziram resultados idênticos, com idempotência de 100%. A hipótese de completude, no entanto, não pode ser considerada totalmente comprovada apenas com esses artefatos, pois o cenário de paginação executado verifica somente que pelo menos um repositório foi coletado — não há comparação explícita entre `itens_coletados` e `itens_esperados`, e a métrica `cobertura_paginacao_pct` não apareceu no CSV desta execução.
 
-**RQV2 — eficiência e resiliência**
+**RQV02 — eficiência e resiliência**
 
-Os resultados também apoiam parcialmente a RQV2: não foram observadas chamadas redundantes nas coletas normais, não houve retry desnecessário quando a API não falhou, e a coleta real terminou com sucesso. A propriedade mais específica da hipótese — que uma resposta `502` é seguida por exatamente um retry bem-sucedido — não foi validada nesta execução, pois essa condição exige uma falha reproduzível que não pode ser garantida usando somente a API real do GitHub. A ausência de `502` nos testes reais não deve ser interpretada como prova de que o mecanismo de retry foi de fato exercitado.
+Os resultados também apoiam parcialmente a RQV02: não foram observadas chamadas redundantes nas coletas normais, não houve retry desnecessário quando a API não falhou, e a coleta real terminou com sucesso. A propriedade mais específica da hipótese — que uma resposta `502` é seguida por exatamente um retry bem-sucedido — não foi validada nesta execução, pois essa condição exige uma falha reproduzível que não pode ser garantida usando somente a API real do GitHub. A ausência de `502` nos testes reais não deve ser interpretada como prova de que o mecanismo de retry foi de fato exercitado.
 
-**Ameaças à validade específicas da inovação (RQV1/RQV2):**
+**Ameaças à validade específicas da inovação (RQV01/RQV02):**
 
 1. Falha transitória não determinística: a API real não permite induzir um `502` na primeira tentativa de uma página; o teste real valida o comportamento normal, não a recuperação controlada.
 2. Cobertura de paginação incompleta: o cenário usa a asserção "ao menos 1 repositório", em vez de exigir exatamente 100 itens.
@@ -283,7 +288,7 @@ Quanto à validação do pipeline de coleta: a execução real forneceu evidênc
 
 Em relação às RQ01–RQ07, a amostra apresenta repositórios com idade mediana de 95,50 meses, mediana de 15 releases e 81% de repositórios atualizados nos últimos 30 dias. Esses resultados indicam maturidade e atividade recente em boa parte da amostra, mas a grande variação nos totais de releases recomenda o uso da mediana junto da média. Não há dados suficientes para conclusões sobre pull requests, linguagens ou issues.
 
-A RQV1 foi atendida parcialmente, com evidência de paginação sem repetição e idempotência de 100%, mas ainda sem comprovação explícita de cobertura percentual de 100% dos itens esperados. A RQV2 também foi atendida parcialmente: a ausência de chamadas redundantes foi observada e o comportamento normal foi bem-sucedido, porém a recuperação específica de uma falha `502` não foi exercitada pela API real e, portanto, não pode ser declarada validada com base nesta execução.
+A RQV01 foi atendida parcialmente, com evidência de paginação sem repetição e idempotência de 100%, mas ainda sem comprovação explícita de cobertura percentual de 100% dos itens esperados. A RQV02 também foi atendida parcialmente: a ausência de chamadas redundantes foi observada e o comportamento normal foi bem-sucedido, porém a recuperação específica de uma falha `502` não foi exercitada pela API real e, portanto, não pode ser declarada validada com base nesta execução.
 
 Com mais tempo, o grupo expandiria essa inovação simulando a API do GitHub (mock de respostas 502) para validar deterministicamente o mecanismo de retry, e adicionaria a asserção explícita de `cobertura_paginacao_pct = 100%` ao cenário de paginação, hoje limitado à verificação de "ao menos 1 repositório".
 
