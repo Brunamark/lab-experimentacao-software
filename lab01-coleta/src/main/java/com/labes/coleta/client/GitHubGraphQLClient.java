@@ -162,7 +162,7 @@ public class GitHubGraphQLClient {
 
     private Map<String, IssueCountResult> enviarLoteContagens(HttpEntity<GraphQLRequest> entity) {
         ResponseEntity<GraphQLBatchResponse> response =
-                restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLBatchResponse.class);
+            restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLBatchResponse.class);
 
         GraphQLBatchResponse body = response.getBody();
 
@@ -194,7 +194,7 @@ public class GitHubGraphQLClient {
 
     private Map<String, PullRequestSizeResult> enviarLoteTamanhos(HttpEntity<GraphQLRequest> entity) {
         ResponseEntity<GraphQLSizeBatchResponse> response =
-                restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLSizeBatchResponse.class);
+            restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLSizeBatchResponse.class);
 
         GraphQLSizeBatchResponse body = response.getBody();
 
