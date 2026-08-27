@@ -294,4 +294,4 @@ Com mais tempo, o grupo expandiria essa inovação simulando a API do GitHub (mo
 - ZUSE, Horst. A framework of software measurement. Walter de Gruyter, 2013.
 - *[demais referências usadas — ex.: documentação da API GraphQL do GitHub, documentação do Cucumber, fonte de linguagens mais populares para RQ05]*
 
-Vídeo de referência (conforme orientação do template): https://www.youtube.com/shorts/YwnaeO95AN8
+
