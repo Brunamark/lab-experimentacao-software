@@ -4,6 +4,7 @@ Funcionalidade: Idempotência da requisição
   Quero que repetir a mesma coleta produza sempre o mesmo resultado
   Para confiar nos números usados na análise
 
+  @real
   Cenário: Duas execuções da mesma coleta geram o mesmo conjunto de dados
     Dado que a API do GitHub tem 4 repositórios disponíveis para a busca
     E o tamanho de página configurado é 2

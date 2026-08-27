@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 public class GitHubProperties {
 
     private String token;
+    private ApiProperties graphql = new ApiProperties("https://api.github.com/graphql");
+    private ApiProperties rest = new ApiProperties("https://api.github.com");
     private int totalRepos = 100;
     private int pageSize = 50;
 
@@ -20,6 +22,22 @@ public class GitHubProperties {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public ApiProperties getGraphql() {
+        return graphql;
+    }
+
+    public void setGraphql(ApiProperties graphql) {
+        this.graphql = graphql;
+    }
+
+    public ApiProperties getRest() {
+        return rest;
+    }
+
+    public void setRest(ApiProperties rest) {
+        this.rest = rest;
     }
 
     public int getTotalRepos() {
@@ -36,5 +54,8 @@ public class GitHubProperties {
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public record ApiProperties(String url) {
     }
 }

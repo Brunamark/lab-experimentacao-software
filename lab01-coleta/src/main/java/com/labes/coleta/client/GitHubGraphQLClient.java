@@ -33,7 +33,6 @@ import java.util.Map;
 public class GitHubGraphQLClient {
 
     private static final Logger log = LoggerFactory.getLogger(GitHubGraphQLClient.class);
-    private static final String GRAPHQL_URL = "https://api.github.com/graphql";
 
     /**
      * A API do GitHub devolve 502/504 de forma intermitente em queries com conexões aninhadas
@@ -106,7 +105,7 @@ public class GitHubGraphQLClient {
     /** Envia a requisição e valida a resposta. Erros 5xx sobem para o laço de retry. */
     private SearchResult enviar(HttpEntity<GraphQLRequest> entity) {
         ResponseEntity<GraphQLResponse> response =
-                restTemplate.postForEntity(GRAPHQL_URL, entity, GraphQLResponse.class);
+                restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLResponse.class);
 
         GraphQLResponse body = response.getBody();
 
