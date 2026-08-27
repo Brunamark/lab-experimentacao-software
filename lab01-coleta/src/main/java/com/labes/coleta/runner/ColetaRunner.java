@@ -2,9 +2,13 @@ package com.labes.coleta.runner;
 
 import com.labes.coleta.model.RepositorioMetrica;
 import com.labes.coleta.service.AnaliseAtualizacaoService;
+import com.labes.coleta.model.TendenciaAnualPullRequests;
+import com.labes.coleta.model.TendenciaAnualTamanhoPR;
 import com.labes.coleta.service.AnaliseMaturidadeService;
 import com.labes.coleta.service.AnaliseReleasesService;
+import com.labes.coleta.service.ColetaPullRequestsService;
 import com.labes.coleta.service.ColetaService;
+import com.labes.coleta.service.ColetaTamanhoPRService;
 import com.labes.coleta.service.CsvExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +29,30 @@ public class ColetaRunner implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ColetaRunner.class);
     private static final String ARQUIVO_SAIDA = "repositorios_top100.csv";
+    private static final String ARQUIVO_SAIDA_TENDENCIA_PRS = "tendencia_prs.csv";
+    private static final String ARQUIVO_SAIDA_TAMANHO_PRS = "tendencia_tamanho_prs.csv";
 
     private final ColetaService coletaService;
     private final CsvExportService csvExportService;
     private final AnaliseMaturidadeService analiseMaturidadeService;
     private final AnaliseReleasesService analiseReleasesService;
     private final AnaliseAtualizacaoService analiseAtualizacaoService;
+    private final ColetaPullRequestsService coletaPullRequestsService;
+    private final ColetaTamanhoPRService coletaTamanhoPRService;
 
     public ColetaRunner(ColetaService coletaService, CsvExportService csvExportService,
-                         AnaliseMaturidadeService analiseMaturidadeService,
                          AnaliseReleasesService analiseReleasesService,
-                         AnaliseAtualizacaoService analiseAtualizacaoService) {
+                         AnaliseAtualizacaoService analiseAtualizacaoService,
+                         AnaliseMaturidadeService analiseMaturidadeService,
+                         ColetaPullRequestsService coletaPullRequestsService,
+                         ColetaTamanhoPRService coletaTamanhoPRService) {
         this.coletaService = coletaService;
         this.csvExportService = csvExportService;
         this.analiseMaturidadeService = analiseMaturidadeService;
         this.analiseReleasesService = analiseReleasesService;
         this.analiseAtualizacaoService = analiseAtualizacaoService;
+        this.coletaPullRequestsService = coletaPullRequestsService;
+        this.coletaTamanhoPRService = coletaTamanhoPRService;
     }
 
     @Override
@@ -76,6 +88,22 @@ public class ColetaRunner implements CommandLineRunner {
         if (semDataDePush > 0) {
             log.warn("{} repositório(s) sem data de push foram descartados das estatísticas.",
                     semDataDePush);
+        }
+
+        List<TendenciaAnualPullRequests> tendenciaPRs = coletaPullRequestsService.coletar(repositorios);
+        csvExportService.exportarTendenciaPRs(tendenciaPRs, ARQUIVO_SAIDA_TENDENCIA_PRS);
+        log.info("Tendência de PRs salva em: {}", ARQUIVO_SAIDA_TENDENCIA_PRS);
+        for (TendenciaAnualPullRequests t : tendenciaPRs) {
+            log.info("Ano {}: {} PRs criados, {} aceitos (taxa de aceitação: {}%)",
+                    t.ano(), t.prsCriadas(), t.prsAceitas(), t.taxaAceitacao());
+        }
+
+        List<TendenciaAnualTamanhoPR> tendenciaTamanho = coletaTamanhoPRService.coletar(repositorios);
+        csvExportService.exportarTendenciaTamanhoPRs(tendenciaTamanho, ARQUIVO_SAIDA_TAMANHO_PRS);
+        log.info("Tendência de tamanho de PRs salva em: {}", ARQUIVO_SAIDA_TAMANHO_PRS);
+        for (TendenciaAnualTamanhoPR t : tendenciaTamanho) {
+            log.info("Ano {}: tamanho médio {} linhas (amostra: {} PRs)",
+                    t.ano(), t.tamanhoMedioLinhas(), t.amostraPRs());
         }
     }
 }

@@ -11,6 +11,7 @@ github:
   # qualquer página que os contenha: com 100 falha sempre, com 25 falha na página deles.
   # Com 10 eles se separam e a coleta completa (100 repos em ~36s).
   page-size: ${PAGE_SIZE:10}
+  amostra-prs-tamanho: ${AMOSTRA_PRS_TAMANHO:10}   # quantos PRs aceitos amostrar por repositório/ano
 
 spring:
   main:

@@ -15,6 +15,9 @@ public class GitHubProperties {
     private ApiProperties rest = new ApiProperties("https://api.github.com");
     private int totalRepos = 100;
     private int pageSize = 50;
+    private int anoInicioAnalise = 2022;
+    private int limiteRepositoriosAnalisePrs = 100;
+    private int amostraPrsTamanho = 10;
 
     public String getToken() {
         return token;
