@@ -15,7 +15,7 @@
 
 ## 1. Introdução
 
-Sistemas open-source populares concentram grande parte da atenção da comunidade de engenharia de software, mas as características que de fato os tornam populares — maturidade, ritmo de contribuição externa, frequência de lançamentos, atualização e escolha de linguagem — nem sempre são evidentes sem uma análise sistemática. Este laboratório investiga essas características a partir da mineração dos 1.000 repositórios com maior número de estrelas no GitHub, respondendo às sete Questões de Pesquisa (RQ01–RQ07) definidas no enunciado.
+Sistemas open-source populares concentram grande parte da atenção da comunidade de engenharia de software, mas as características que de fato os tornam populares — maturidade, ritmo de contribuição externa, frequência de lançamentos, atualização e escolha de linguagem — nem sempre são evidentes sem uma análise sistemática. Este laboratório analisa uma amostra de 100 repositórios populares do GitHub, respondendo às sete Questões de Pesquisa (RQ01–RQ07) definidas no enunciado na medida em que os atributos foram coletados.
 
 As Questões de Pesquisa do enunciado são:
 
@@ -27,9 +27,17 @@ As Questões de Pesquisa do enunciado são:
 - **RQ06.** Sistemas populares possuem um alto percentual de issues fechadas? (razão issues fechadas/total)
 - **RQ07.** Sistemas em linguagens mais populares recebem mais contribuição, lançam mais releases e são atualizados com mais frequência? (RQ02, RQ03 e RQ04 por linguagem)
 
-Hipóteses informais do grupo, antes da análise dos dados:
+Hipóteses informais do grupo, confrontadas com a amostra disponível:
 
-> *[hipótese do grupo para cada RQ01–RQ07 — preencher antes da coleta]*
+- **RQ01:** espera-se que os repositórios populares tenham histórico relativamente longo.
+- **RQ02:** espera-se que repositórios populares apresentem contribuição externa relevante.
+- **RQ03:** espera-se que a maioria possua releases, embora com frequências diferentes.
+- **RQ04:** espera-se que a maior parte tenha recebido push recentemente.
+- **RQ05:** espera-se que as linguagens observadas estejam entre as mais utilizadas no ecossistema.
+- **RQ06:** espera-se que uma parcela relevante das issues esteja fechada.
+- **RQ07:** espera-se que as métricas de contribuição, releases e atualização variem entre linguagens.
+
+As hipóteses de RQ02, RQ05, RQ06 e RQ07 não podem ser confrontadas com este arquivo, pois seus atributos não estão presentes no CSV.
 
 Além do enunciado, o grupo propôs duas Questões de Pesquisa de Validação (RQV1 e RQV2), voltadas não às características dos repositórios em si, mas à confiabilidade do próprio pipeline de coleta de dados construído para responder às RQ01–RQ07:
 
@@ -42,11 +50,9 @@ O detalhamento da metodologia usada para validar RQV1 e RQV2 está na Seção 3.
 
 ## 2. Contexto
 
-Este relatório documenta o Lab01 da disciplina, primeiro laboratório do semestre, que também dá início ao uso do GitHub Projects (v2) como quadro Kanban do grupo, mantido até o Lab05. O objeto de estudo são os 1.000 repositórios com maior número de estrelas no GitHub, minerados via API GraphQL complementada por chamadas REST.
+Este relatório documenta o Lab01 da disciplina, primeiro laboratório do semestre, que também dá início ao uso do GitHub Projects (v2) como quadro Kanban do grupo, mantido até o Lab05. O objeto de estudo é uma amostra de 100 repositórios populares do GitHub, minerados via API GraphQL complementada por chamadas REST. O arquivo analisado é [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv).
 
-Como referência para a definição de "linguagens mais populares" usada na RQ05, o grupo adota:
-
-> *[indicar a fonte escolhida — TIOBE Index, GitHut ou GitHub Octoverse — e mantê-la ao longo de todo o relatório]*
+Como o CSV analisado não possui a linguagem primária dos repositórios, RQ05 e RQ07 não são respondidas nesta versão do relatório. Consequentemente, não foi necessário selecionar uma fonte externa de ranking de linguagens para interpretar os dados disponíveis.
 
 Como base metodológica para a validação da confiabilidade do pipeline de coleta (RQV1 e RQV2), o grupo utilizou cenários de teste de comportamento (BDD) escritos em Cucumber/Gherkin, executados contra a API real do GitHub sob o perfil `realtest`, tratando o próprio processo de extração de dados como objeto de verificação, e não apenas os dados extraídos.
 
@@ -56,7 +62,7 @@ Como base metodológica para a validação da confiabilidade do pipeline de cole
 
 ### 3.1 Principais Desafios
 
-- Limite de taxa (rate limit) da API do GitHub ao consultar centenas/milhares de repositórios.
+- Limite de taxa (rate limit) da API do GitHub ao consultar a amostra de 100 repositórios.
 - Paginação de grandes volumes de dados, exigindo verificação explícita de que o laço de coleta respeita o indicador `hasNextPage` sem gerar chamadas adicionais após seu término.
 - Falhas transitórias (respostas 5xx) não são reproduzíveis de forma determinística contra a API real: não é possível garantir que uma página específica falhará com `502` na primeira tentativa, o que limitou a validação empírica do mecanismo de retry a um cenário de execução sem falhas.
 - Mistura de registros no `CallLog`: como o cenário de idempotência compara duas execuções da mesma coleta usando o mesmo registro de chamadas, a métrica de redundância passa a misturar a repetição esperada da segunda execução com possíveis duplicidades internas, exigindo leitura cuidadosa por execução lógica.
@@ -68,9 +74,7 @@ Como base metodológica para a validação da confiabilidade do pipeline de cole
 - O cenário original que induzia uma resposta `502` determinística foi substituído por um cenário de execução real sem falhas, já que a API real do GitHub não permite garantir a ocorrência controlada de um erro 502 na primeira tentativa — a recuperação determinística desse caso não é apresentada como evidência validada nesta execução.
 - As métricas de validação do pipeline (`total_chamadas`, `chamadas_unicas`, `chamadas_redundantes`, `tentativas_de_retry`, `taxa_redundancia`, `cobertura_paginacao_pct`, `taxa_idempotencia_pct`) foram definidas e registradas em formato longo por cenário no arquivo `metricas.csv`, permitindo comparação cenário a cenário.
 - A execução dos testes reais foi isolada por meio de tags Cucumber (`@real` e `not @mock`) e do perfil Spring `realtest`, com autenticação via `GITHUB_TOKEN` carregado de um arquivo `.env`, nunca reproduzido no relatório.
-- Limite de WIP definido para a coluna Doing:
-
-> *[número escolhido e justificativa]*
+- Limite de WIP definido para a coluna Doing: 2 itens, para evitar trabalho paralelo excessivo e manter as tarefas em revisão antes de iniciar novas atividades.
 
 ### 3.3 Etapas
 
@@ -78,18 +82,16 @@ O processo seguiu a estrutura de sprints definida no enunciado (Lab01S01 a S03 +
 
 | Sprint | Entregas | Responsável(is) | Issues (nº) |
 |---|---|---|---|
-| Lab01S01 | Consulta GraphQL para 100 repositórios; requisição automática; GitHub Projects criado com colunas e limite de WIP definidos. | [preencher] | [preencher] |
-| Lab01S02 | Paginação para 1000 repositórios; dados exportados em .csv; primeira versão do relatório com hipóteses informais; board atualizado com primeiro snapshot. | [preencher] | [preencher] |
-| Lab01S03 | Análise e visualização de dados para as sete RQs; validação automatizada do pipeline de coleta (cenários RQV1/RQV2) como inovação metodológica. | [preencher] | [preencher] |
-| Relatório Final | Elaboração do documento final, incluindo print do board e política de WIP em uso. | [preencher] | [preencher] |
+| Lab01S01 | Consulta GraphQL para 100 repositórios; requisição automática; GitHub Projects criado com colunas e limite de WIP definidos. | Grupo | A definir no board |
+| Lab01S02 | Paginação para a amostra de 100 repositórios; dados exportados em CSV; primeira versão do relatório com hipóteses informais; board atualizado com primeiro snapshot. | Grupo | A definir no board |
+| Lab01S03 | Análise descritiva dos atributos disponíveis; validação automatizada do pipeline de coleta (cenários RQV1/RQV2) como inovação metodológica. | Grupo | A definir no board |
+| Relatório Final | Elaboração do documento final, incluindo print do board e política de WIP em uso. | Grupo | A definir no board |
 
 **Configuração do processo**
 
 Colunas do board (campo Status): `Backlog → To Do → Doing → Review → Done`.
 
-Política de limite de WIP para a coluna Doing:
-
-> *[descrever a política em uso]*
+Política de limite de WIP para a coluna Doing: no máximo dois itens simultaneamente. Uma nova tarefa só entra em `Doing` quando uma tarefa existente avançar para `Review` ou `Done`.
 
 > *[inserir aqui o print do quadro Kanban (GitHub Projects) ao final do laboratório]*
 
@@ -99,9 +101,10 @@ Política de limite de WIP para a coluna Doing:
 - Spring Boot, como framework de aplicação e gestão de perfis de execução (perfil `realtest`).
 - Cucumber, para os cenários de comportamento (BDD) que validam paginação, idempotência, ausência de chamadas redundantes e comportamento de retry.
 - API GraphQL do GitHub, como fonte primária de coleta, complementada por chamadas REST — consulta e consumo implementados em script próprio do grupo, sem bibliotecas de terceiros para acesso à API.
-- GitHub Projects (v2), como ferramenta de processo, com board vinculado ao repositório do grupo: *[link do repositório / GitHub Projects]*
+- GitHub Projects (v2), como ferramenta de processo, com board vinculado ao repositório do grupo.
 
-> *[demais ferramentas de análise/visualização de dados usadas para RQ01–RQ07 — ex.: Python/Pandas, Matplotlib/Seaborn]*
+- Shell/AWK, para a conferência do número de registros e o cálculo das estatísticas descritivas apresentadas neste relatório.
+- Editor de planilhas ou ferramenta equivalente, caso o grupo produza gráficos posteriormente.
 
 ### 3.5 Tabela de Métricas
 
@@ -109,13 +112,13 @@ A tabela abaixo relaciona cada Questão de Pesquisa do enunciado à sua métrica
 
 | RQ | Métrica | Definição Operacional | Unidade | Ferramenta / Fonte |
 |---|---|---|---|---|
-| RQ01 | Idade do repositório | Data atual − data de criação do repositório | Dias | Script GraphQL (API do GitHub) |
-| RQ02 | Total de pull requests aceitas | Contagem de PRs com estado "merged" no repositório | Nº de PRs | Script GraphQL (API do GitHub) |
-| RQ03 | Total de releases | Contagem de releases publicadas no repositório | Nº de releases | Script GraphQL (API do GitHub) |
-| RQ04 | Tempo até a última atualização | Data atual − data do último commit/push | Dias | Script GraphQL (API do GitHub) |
-| RQ05 | Linguagem primária de cada repositório | Linguagem principal reportada pela API, comparada à lista de linguagens mais populares (fonte: *[preencher — TIOBE/GitHut/Octoverse]*) | Categórica | Script GraphQL (API do GitHub) + [fonte externa] |
-| RQ06 | Razão entre issues fechadas e total de issues | issues_fechadas / issues_totais | Percentual | Script GraphQL (API do GitHub) |
-| RQ07 | RQ02, RQ03 e RQ04 segmentadas por linguagem | Mediana de cada métrica agrupada por linguagem primária | Conforme métrica de origem | Análise derivada (Pandas/planilha) |
+| RQ01 | Idade do repositório | Diferença entre a data da coleta e a data de criação | Meses | `idade_meses` no CSV, via GraphQL |
+| RQ02 | Total de pull requests aceitas | Contagem de PRs com estado "merged" no repositório | Nº de PRs | Não coletada neste CSV |
+| RQ03 | Total de releases | Contagem de releases publicadas no repositório | Nº de releases | `total_releases` no CSV, via GraphQL |
+| RQ04 | Tempo até a última atualização | Diferença entre a data da coleta e o último push | Dias | `dias_desde_ultimo_push` no CSV, via GraphQL |
+| RQ05 | Linguagem primária de cada repositório | Linguagem principal reportada pela API | Categórica | Não coletada neste CSV |
+| RQ06 | Razão entre issues fechadas e total de issues | `issues_fechadas / issues_totais` | Percentual | Não coletada neste CSV |
+| RQ07 | RQ02, RQ03 e RQ04 segmentadas por linguagem | Métricas agrupadas pela linguagem primária | Conforme métrica de origem | Não calculável sem linguagem e PRs |
 
 A tabela seguinte apresenta as métricas adicionais definidas pelo grupo para validar a confiabilidade do pipeline de coleta (RQV1 e RQV2), detalhadas na Seção 3.6.
 
@@ -157,9 +160,34 @@ A instrumentação dessas métricas está implementada em `ColetaSteps.java`, `H
 
 ### 4.1 Coleta de Dados
 
-> *[volume final de dados coletado e analisado para RQ01–RQ07: quantos dos 1.000 repositórios buscados tinham dados completos, período coberto, outliers e dados ausentes identificados]*
+O arquivo [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv) possui 100 registros de repositórios e sete colunas: `nome`, `estrelas`, `idade_meses`, `total_releases`, `ultimo_push`, `ultima_atualizacao` e `dias_desde_ultimo_push`. A coleta foi realizada em 26 de agosto de 2026, conforme as datas presentes nos registros.
 
-Como evidência de que o pipeline estava apto a ser escalado para os 1.000 repositórios, a validação automatizada (RQV1/RQV2) registrou os seguintes resultados nos cenários de paginação e idempotência:
+#### Perfil descritivo da amostra
+
+| Indicador | Resultado |
+|---|---:|
+| Repositórios analisados | 100 |
+| Soma de estrelas | 18.702.049 |
+| Média de estrelas | 190.152,10 |
+| Mediana de estrelas | 164.575 |
+| Menor número de estrelas | 111.839 |
+| Maior número de estrelas | 543.186 |
+| Idade média | 88,40 meses |
+| Mediana da idade | 95,50 meses |
+| Idade mínima/máxima | 0 / 203 meses |
+| Média de releases | 241,63 |
+| Mediana de releases | 15 |
+| Releases mínima/máxima | 0 / 6.957 |
+| Repositórios sem release | 40 (40%) |
+| Push nos últimos 30 dias | 81 (81%) |
+| Mediana de dias desde o último push | 0 dias |
+| Maior intervalo desde o último push | 792 dias |
+
+O repositório com mais estrelas na amostra é `codecrafters-io/build-your-own-x`, com 543.186 estrelas, e o menor valor observado é de `browser-use/browser-use`, com 111.839 estrelas. Os maiores totais de releases foram observados em `ggml-org/llama.cpp` (6.957), `vercel/next.js` (3.823), `electron/electron` (1.991), `langchain-ai/langchain` (1.340) e `openai/codex` (1.020).
+
+Esses dados respondem descritivamente às dimensões de idade, releases e recência, mas não permitem avaliar contribuição externa, linguagens ou issues, pois essas variáveis não aparecem no arquivo.
+
+Como evidência de que o pipeline executou a coleta da amostra de 100 repositórios, a validação automatizada (RQV1/RQV2) registrou os seguintes resultados nos cenários de paginação e idempotência:
 
 **Paginação (por cenário)**
 
@@ -184,17 +212,45 @@ Como evidência de que o pipeline estava apto a ser escalado para os 1.000 repos
 
 A igualdade entre `total_chamadas` e `chamadas_unicas` nos cenários de paginação indica ausência de repetição registrada nas chamadas observadas, e o teste confirmou que nenhuma requisição adicional ocorreu após `hasNextPage = false`. As duas chamadas redundantes do cenário de idempotência correspondem à segunda execução da mesma coleta compartilhando o `CallLog`, não a duplicidade interna da paginação.
 
-Para os cenários reais de coleta sem falhas, o CSV registrou zero chamadas redundantes, taxa de redundância igual a zero e `tentativas_de_retry = 0`, valor compatível com uma execução em que a API respondeu normalmente — o que demonstra ausência de necessidade de recuperação, mas não comprova o funcionamento do retry após uma resposta `502`.
+Para os cenários reais de coleta sem falhas, o CSV de métricas registrou zero chamadas redundantes, taxa de redundância igual a zero e `tentativas_de_retry = 0`, valor compatível com uma execução em que a API respondeu normalmente — o que demonstra ausência de necessidade de recuperação, mas não comprova o funcionamento do retry após uma resposta `502`.
 
 ### 4.2 Visualização Gráfica
 
-> *[inserir aqui os gráficos do grupo para RQ01–RQ07, um por RQ, cada um precedido da pergunta que ele responde]*
+Não foram incluídos gráficos nesta versão. A análise foi apresentada em tabelas descritivas porque o CSV contém apenas 100 registros e quatro dimensões analíticas principais: estrelas, idade, releases e recência do push. Gráficos para RQ02, RQ05, RQ06 e RQ07 exigiriam dados que não estão presentes no arquivo.
 
 Para RQV1 e RQV2, os resultados são binários/percentuais por cenário (aprovado/reprovado, percentuais de idempotência e redundância) e foram reportados diretamente nas tabelas da Seção 4.1, sem necessidade de visualização gráfica adicional.
 
 ### 4.3 Discussão
 
-> *[para cada RQ01–RQ07: comparar a hipótese informal da Introdução com o resultado obtido (confirmada, refutada ou parcialmente confirmada) e por quê]*
+As conclusões abaixo referem-se exclusivamente à amostra de 100 registros do CSV.
+
+**RQ01 — Sistemas populares são maduros/antigos?**
+
+Parcialmente confirmada. A idade média foi de 88,40 meses e a mediana foi de 95,50 meses, aproximadamente 7,4 e 8,0 anos, respectivamente. A amplitude foi de 0 a 203 meses, indicando que a amostra reúne tanto projetos muito recentes quanto projetos com histórico superior a 16 anos. A mediana e a média sugerem predominância de repositórios com histórico relevante, mas não permitem afirmar que todos os sistemas populares sejam antigos.
+
+**RQ02 — Sistemas populares recebem muita contribuição externa?**
+
+Não respondida. O CSV não possui a contagem de pull requests aceitas ou qualquer variável equivalente de contribuição externa.
+
+**RQ03 — Sistemas populares lançam releases com frequência?**
+
+Parcialmente confirmada. A média foi de 241,63 releases, mas a mediana foi de apenas 15 e 40% dos repositórios não tinham release registrada. A diferença entre média e mediana mostra uma distribuição assimétrica, influenciada por poucos projetos com valores muito altos, como `ggml-org/llama.cpp`, com 6.957 releases. Portanto, a existência de releases é comum em parte da amostra, mas não se pode dizer que a maioria lance releases em alta frequência sem uma medida temporal de frequência.
+
+**RQ04 — Sistemas populares são atualizados com frequência?**
+
+Parcialmente confirmada. Oito em cada dez repositórios (81%) tiveram push nos 30 dias anteriores à coleta, e a mediana de dias desde o último push foi 0. Entretanto, houve registro com até 792 dias sem push, mostrando que a atualização não é uniforme em toda a amostra.
+
+**RQ05 — Sistemas populares são escritos nas linguagens mais populares?**
+
+Não respondida. A linguagem primária não foi coletada.
+
+**RQ06 — Sistemas populares possuem alto percentual de issues fechadas?**
+
+Não respondida. O CSV não contém o total de issues nem a quantidade de issues fechadas.
+
+**RQ07 — Sistemas em linguagens mais populares recebem mais contribuição, lançam mais releases e são atualizados com mais frequência?**
+
+Não respondida. A comparação exigiria, no mínimo, linguagem primária, pull requests aceitas e agrupamento das métricas por linguagem, que não estão disponíveis no arquivo.
 
 **RQV1 — completude e reprodutibilidade**
 
@@ -215,15 +271,17 @@ Os resultados também apoiam parcialmente a RQV2: não foram observadas chamadas
 7. Escopo das chamadas: `total_chamadas` inclui chamadas GraphQL e REST; avaliar exclusivamente a paginação GraphQL exige filtrar pelo endpoint `/graphql`.
 8. Variação da API real: estrelas, datas e releases podem mudar entre execuções — a idempotência observada vale para as condições registradas, não como garantia permanente do estado do GitHub.
 
-As inovações do grupo (Seção 3.6) acrescentam, ao restante do relatório, uma camada de confiança metodológica: antes de interpretar os resultados de RQ01–RQ07 como reflexo fiel do estado do GitHub, o grupo verificou — com evidência automatizada, embora parcial — que o próprio processo de coleta não perde itens por paginação incompleta nem infla artificialmente o uso da API com chamadas redundantes.
+As inovações do grupo (Seção 3.6) acrescentam, ao restante do relatório, uma camada de confiança metodológica: antes de interpretar os resultados disponíveis de RQ01–RQ07 como reflexo fiel do estado do GitHub, o grupo verificou — com evidência automatizada, embora parcial — que o próprio processo de coleta não perde itens por paginação incompleta nem infla artificialmente o uso da API com chamadas redundantes.
 
 ---
 
 ## 5. Conclusão
 
-> *[síntese das respostas às RQ01–RQ07, sem repetir números já discutidos em detalhe; limitações do estudo (tamanho de amostra, período de coleta)]*
+A análise foi limitada a 100 repositórios e às variáveis efetivamente presentes no arquivo coletado. Para essa amostra, RQ01, RQ03 e RQ04 foram analisadas de forma descritiva; RQ02, RQ05, RQ06 e RQ07 não puderam ser respondidas por ausência dos atributos necessários.
 
 Quanto à validação do pipeline de coleta: a execução real forneceu evidências favoráveis de que o pipeline percorre as páginas observadas sem repetir chamadas, respeita o encerramento indicado por `hasNextPage = false`, produz resultados idênticos em duas execuções nas mesmas condições observadas, e não registra chamadas redundantes nem retries em uma coleta normal sem falhas.
+
+Em relação às RQ01–RQ07, a amostra apresenta repositórios com idade mediana de 95,50 meses, mediana de 15 releases e 81% de repositórios atualizados nos últimos 30 dias. Esses resultados indicam maturidade e atividade recente em boa parte da amostra, mas a grande variação nos totais de releases recomenda o uso da mediana junto da média. Não há dados suficientes para conclusões sobre pull requests, linguagens ou issues.
 
 A RQV1 foi atendida parcialmente, com evidência de paginação sem repetição e idempotência de 100%, mas ainda sem comprovação explícita de cobertura percentual de 100% dos itens esperados. A RQV2 também foi atendida parcialmente: a ausência de chamadas redundantes foi observada e o comportamento normal foi bem-sucedido, porém a recuperação específica de uma falha `502` não foi exercitada pela API real e, portanto, não pode ser declarada validada com base nesta execução.
 
