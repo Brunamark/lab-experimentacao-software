@@ -285,11 +285,7 @@ A igualdade entre `total_chamadas` e `chamadas_unicas` nos cenários de paginaç
 
 Para os cenários reais de coleta sem falhas, o CSV de métricas registrou zero chamadas redundantes, taxa de redundância igual a zero e `tentativas_de_retry = 0`, valor compatível com uma execução em que a API respondeu normalmente o que demonstra ausência de necessidade de recuperação, mas não comprova o funcionamento do retry após uma resposta `502`.
 
-### 4.2 Visualização Gráfica
-
-Não foram incluídos gráficos nesta versão. A análise foi apresentada em tabelas descritivas porque os dados disponíveis permitem inferências estatísticas diretas. Gráficos para RQ05, RQ06 e RQ07 exigiriam dados que não estão presentes nos arquivos (linguagem primária e issues). Para RQV01 e RQV02, os resultados são binários/percentuais por cenário e foram reportados diretamente nas tabelas da Seção 4.1.
-
-### 4.3 Discussão
+### 4.2 Discussão
 
 As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros dos CSVs analisados.
 
@@ -340,7 +336,7 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 
 **Não respondida.** A comparação exigiria, no mínimo, linguagem primária, pull requests aceitas e agrupamento das métricas por linguagem, que não estão disponíveis no arquivo.
 
-#### 4.3.1 RQB01 Volume e taxa de aceitação de PRs (2022–2026)
+#### 4.2.1 RQB01 Volume e taxa de aceitação de PRs (2022–2026)
 
 **Hipótese confirmada para o volume, refutada para a taxa de aceitação.** O volume de PRs criadas cresceu consistentemente de 535.174 (2022) para 1.262.393 (2026), um aumento de 135,9%. O volume de PRs aceitas também cresceu, de 379.790 para 698.534 (+83,9%), mas em ritmo inferior.
 
@@ -349,7 +345,7 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 - **Hipótese causal (IA):** o período 2022–2026 coincide com a popularização de ferramentas de IA generativa aplicadas a código (Copilot, Cursor, Claude Code, etc.). A hipótese plausível é que o aumento de PRs de baixa qualidade geradas ou auxiliadas por IA sem revisão humana adequada tenha inflacionado o numerador (PRs criadas) sem corresponder aumento equivalente no denominador (PRs aceitas). Essa interpretação é corroborada pela RQB02 (aumento do tamanho médio das PRs) e seria reforçada pela RQB03 (se confirmada a redução de commits por issue).
 - **Amostragem:** a amostra de PRs por ano cresceu de 5.771 (2022) para 7.043 (2026), um aumento de 22,0% bem inferior ao crescimento de 135,9% no universo de PRs criadas. Isso significa que a amostra de 2026 representa uma fração menor do universo do que em 2022, o que pode introduzir viés de seleção se a amostragem não for estratificada.
 
-#### 4.3.2 RQB02 Tamanho médio das PRs aceitas (2022–2026)
+#### 4.2.2 RQB02 Tamanho médio das PRs aceitas (2022–2026)
 
 **Hipótese confirmada com oscilações intermediárias.** O tamanho médio das PRs aceitas (medido em `additions + deletions`) cresceu de 1.235,08 linhas (2022) para 2.548,91 linhas (2026), um aumento de 106,4%.
 
@@ -358,7 +354,7 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 - **Interpretação crítica:** PRs maiores não são necessariamente sinônimo de maior produtividade. Na engenharia de software, PRs grandes são associadas a maior dificuldade de review, maior probabilidade de introdução de defeitos e menor velocidade de merge. O fato de que o tamanho médio dobrou enquanto a taxa de aceitação despencou (RQB01) reforça a hipótese de que as ferramentas de IA podem estar incentivando contribuições menos granulares e, potencialmente, menos revisáveis.
 - **Amostra robusta:** com 7.043 PRs amostrados em 2026, o erro padrão da média é pequeno o suficiente para que as diferenças observadas sejam estatisticamente significativas.
 
-#### 4.3.3 RQB03 Commits por issue (dados não disponíveis nesta versão)
+#### 4.2.3 RQB03 Commits por issue (dados não disponíveis nesta versão)
 
 **Não respondida nesta versão.** O arquivo `commits_por_issue.csv` não foi fornecido, impedindo o cálculo de `commits_medios_por_issue`, `commits_medianos_por_issue` e `taxa_resolucao_por_pr`. A discussão da Seção 3.6.1 sobre a necessidade de reportar média e mediana conjuntamente permanece válida como justificativa metodológica para quando os dados estiverem disponíveis.
 
