@@ -1,11 +1,14 @@
 package com.labes.coleta.runner;
 
+import com.labes.coleta.config.GitHubProperties;
 import com.labes.coleta.model.RepositorioMetrica;
 import com.labes.coleta.service.AnaliseAtualizacaoService;
+import com.labes.coleta.model.TendenciaAnualCommitsPorIssue;
 import com.labes.coleta.model.TendenciaAnualPullRequests;
 import com.labes.coleta.model.TendenciaAnualTamanhoPR;
 import com.labes.coleta.service.AnaliseMaturidadeService;
 import com.labes.coleta.service.AnaliseReleasesService;
+import com.labes.coleta.service.ColetaCommitsPorIssueService;
 import com.labes.coleta.service.ColetaPullRequestsService;
 import com.labes.coleta.service.ColetaService;
 import com.labes.coleta.service.ColetaTamanhoPRService;
@@ -31,6 +34,7 @@ public class ColetaRunner implements CommandLineRunner {
     private static final String ARQUIVO_SAIDA = "repositorios_top100.csv";
     private static final String ARQUIVO_SAIDA_TENDENCIA_PRS = "tendencia_prs.csv";
     private static final String ARQUIVO_SAIDA_TAMANHO_PRS = "tendencia_tamanho_prs.csv";
+    private static final String ARQUIVO_SAIDA_COMMITS_POR_ISSUE = "commits_por_issue.csv";
 
     private final ColetaService coletaService;
     private final CsvExportService csvExportService;
@@ -39,13 +43,17 @@ public class ColetaRunner implements CommandLineRunner {
     private final AnaliseAtualizacaoService analiseAtualizacaoService;
     private final ColetaPullRequestsService coletaPullRequestsService;
     private final ColetaTamanhoPRService coletaTamanhoPRService;
+    private final ColetaCommitsPorIssueService coletaCommitsPorIssueService;
+    private final GitHubProperties properties;
 
     public ColetaRunner(ColetaService coletaService, CsvExportService csvExportService,
                          AnaliseReleasesService analiseReleasesService,
                          AnaliseAtualizacaoService analiseAtualizacaoService,
                          AnaliseMaturidadeService analiseMaturidadeService,
                          ColetaPullRequestsService coletaPullRequestsService,
-                         ColetaTamanhoPRService coletaTamanhoPRService) {
+                         ColetaTamanhoPRService coletaTamanhoPRService,
+                         ColetaCommitsPorIssueService coletaCommitsPorIssueService,
+                         GitHubProperties properties) {
         this.coletaService = coletaService;
         this.csvExportService = csvExportService;
         this.analiseMaturidadeService = analiseMaturidadeService;
@@ -53,6 +61,8 @@ public class ColetaRunner implements CommandLineRunner {
         this.analiseAtualizacaoService = analiseAtualizacaoService;
         this.coletaPullRequestsService = coletaPullRequestsService;
         this.coletaTamanhoPRService = coletaTamanhoPRService;
+        this.coletaCommitsPorIssueService = coletaCommitsPorIssueService;
+        this.properties = properties;
     }
 
     @Override
@@ -90,20 +100,48 @@ public class ColetaRunner implements CommandLineRunner {
                     semDataDePush);
         }
 
-        List<TendenciaAnualPullRequests> tendenciaPRs = coletaPullRequestsService.coletar(repositorios);
-        csvExportService.exportarTendenciaPRs(tendenciaPRs, ARQUIVO_SAIDA_TENDENCIA_PRS);
-        log.info("Tendência de PRs salva em: {}", ARQUIVO_SAIDA_TENDENCIA_PRS);
-        for (TendenciaAnualPullRequests t : tendenciaPRs) {
-            log.info("Ano {}: {} PRs criados, {} aceitos (taxa de aceitação: {}%)",
-                    t.ano(), t.prsCriadas(), t.prsAceitas(), t.taxaAceitacao());
+        // As coletas de tendência são caras (horas, nos 1000 repositórios) e independentes
+        // entre si. As flags permitem rodar uma métrica isolada por variável de ambiente,
+        // sem comentar código aqui — o default continua sendo a coleta completa.
+        if (properties.isColetarTendenciaPrs()) {
+            List<TendenciaAnualPullRequests> tendenciaPRs = coletaPullRequestsService.coletar(repositorios);
+            csvExportService.exportarTendenciaPRs(tendenciaPRs, ARQUIVO_SAIDA_TENDENCIA_PRS);
+            log.info("Tendência de PRs salva em: {}", ARQUIVO_SAIDA_TENDENCIA_PRS);
+            for (TendenciaAnualPullRequests t : tendenciaPRs) {
+                log.info("Ano {}: {} PRs criados, {} aceitos (taxa de aceitação: {}%)",
+                        t.ano(), t.prsCriadas(), t.prsAceitas(), t.taxaAceitacao());
+            }
+        } else {
+            log.info("Coleta de tendência de PRs desativada (coletar-tendencia-prs=false).");
         }
 
-        List<TendenciaAnualTamanhoPR> tendenciaTamanho = coletaTamanhoPRService.coletar(repositorios);
-        csvExportService.exportarTendenciaTamanhoPRs(tendenciaTamanho, ARQUIVO_SAIDA_TAMANHO_PRS);
-        log.info("Tendência de tamanho de PRs salva em: {}", ARQUIVO_SAIDA_TAMANHO_PRS);
-        for (TendenciaAnualTamanhoPR t : tendenciaTamanho) {
-            log.info("Ano {}: tamanho médio {} linhas (amostra: {} PRs)",
-                    t.ano(), t.tamanhoMedioLinhas(), t.amostraPRs());
+        if (properties.isColetarTamanhoPrs()) {
+            List<TendenciaAnualTamanhoPR> tendenciaTamanho = coletaTamanhoPRService.coletar(repositorios);
+            csvExportService.exportarTendenciaTamanhoPRs(tendenciaTamanho, ARQUIVO_SAIDA_TAMANHO_PRS);
+            log.info("Tendência de tamanho de PRs salva em: {}", ARQUIVO_SAIDA_TAMANHO_PRS);
+            for (TendenciaAnualTamanhoPR t : tendenciaTamanho) {
+                log.info("Ano {}: tamanho médio {} linhas (amostra: {} PRs)",
+                        t.ano(), t.tamanhoMedioLinhas(), t.amostraPRs());
+            }
+        } else {
+            log.info("Coleta de tamanho de PRs desativada (coletar-tamanho-prs=false).");
+        }
+
+        if (properties.isColetarCommitsPorIssue()) {
+            List<TendenciaAnualCommitsPorIssue> commitsPorIssue =
+                    coletaCommitsPorIssueService.coletar(repositorios);
+            csvExportService.exportarCommitsPorIssue(commitsPorIssue, ARQUIVO_SAIDA_COMMITS_POR_ISSUE);
+            log.info("Commits por issue salvos em: {}", ARQUIVO_SAIDA_COMMITS_POR_ISSUE);
+            for (TendenciaAnualCommitsPorIssue t : commitsPorIssue) {
+                double fatiaComPr = t.issuesFechadasNoUniverso() == 0 ? 0
+                        : Math.round(t.issuesComPrNoUniverso() * 10000.0 / t.issuesFechadasNoUniverso()) / 100.0;
+                log.info("Ano {}: media {} | mediana {} commits por issue (amostra: {} issues | {} de {} issues fechadas tinham PR: {}%)",
+                        t.ano(), t.commitsMediosPorIssue(), t.commitsMedianosPorIssue(),
+                        t.issuesAnalisadas(), t.issuesComPrNoUniverso(),
+                        t.issuesFechadasNoUniverso(), fatiaComPr);
+            }
+        } else {
+            log.info("Coleta de commits por issue desativada (coletar-commits-por-issue=false).");
         }
     }
 }

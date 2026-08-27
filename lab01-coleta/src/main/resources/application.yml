@@ -11,7 +11,20 @@ github:
   # qualquer página que os contenha: com 100 falha sempre, com 25 falha na página deles.
   # Com 10 eles se separam e a coleta completa (100 repos em ~36s).
   page-size: ${PAGE_SIZE:10}
+  # Escopo das análises de tendência (RQB01, RQB02 e RQB03), que compartilham a mesma amostra
+  # de repositórios e o mesmo intervalo de anos para poderem ser cruzadas na discussão.
+  # Sem estes dois placeholders, o valor do campo Java era o único em vigor e as variáveis de
+  # ambiente correspondentes não tinham efeito nenhum — uma coleta de 1000 repositórios
+  # analisava 10 sem avisar.
+  ano-inicio-analise: ${ANO_INICIO_ANALISE:2022}
+  limite-repositorios-analise-prs: ${LIMITE_REPOSITORIOS_ANALISE_PRS:10}
   amostra-prs-tamanho: ${AMOSTRA_PRS_TAMANHO:10}   # quantos PRs aceitos amostrar por repositório/ano
+  amostra-issues-commits: ${AMOSTRA_ISSUES_COMMITS:10}  # quantas issues fechadas amostrar por repositório/ano
+  # Flags de coleta: permitem rodar uma métrica isolada (ex.: só a RQB03 nos 1000 repositórios)
+  # sem comentar código no runner. O default é a coleta completa.
+  coletar-tendencia-prs: ${COLETAR_TENDENCIA_PRS:true}
+  coletar-tamanho-prs: ${COLETAR_TAMANHO_PRS:true}
+  coletar-commits-por-issue: ${COLETAR_COMMITS_POR_ISSUE:true}
 
 spring:
   main:

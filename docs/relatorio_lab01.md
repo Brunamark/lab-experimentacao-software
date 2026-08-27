@@ -17,6 +17,8 @@
 
 Sistemas open-source populares concentram grande parte da atenção da comunidade de engenharia de software, mas as características que de fato os tornam populares — maturidade, ritmo de contribuição externa, frequência de lançamentos, atualização e escolha de linguagem — nem sempre são evidentes sem uma análise sistemática. Este laboratório analisa uma amostra de 100 repositórios populares do GitHub, respondendo às sete Questões de Pesquisa (RQ01–RQ07) definidas no enunciado na medida em que os atributos foram coletados.
 
+> **Atenção às duas bases de dados.** As RQ01–RQ07 e as RQV01–RQV02 foram respondidas sobre a amostra de **100 repositórios**; as Questões de Pesquisa Bônus (RQB01–RQB03), apresentadas adiante nesta seção, foram respondidas sobre os **1000 repositórios** mais populares, porque analisam séries anuais que exigem volume maior para serem estáveis. Cada tabela da Seção 4 indica qual base gerou os seus números.
+
 As Questões de Pesquisa do enunciado são:
 
 - **RQ01.** Sistemas populares são maduros/antigos? (idade do repositório)
@@ -53,7 +55,7 @@ O detalhamento da metodologia usada para validação dos requisitos adicionais s
 
 ## 2. Contexto
 
-Este relatório documenta o Lab01 da disciplina, primeiro laboratório do semestre, que também dá início ao uso do GitHub Projects (v2) como quadro Kanban do grupo, mantido até o Lab05. O objeto de estudo é uma amostra de 100 repositórios populares do GitHub, minerados via API GraphQL complementada por chamadas REST. O arquivo analisado é [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv).
+Este relatório documenta o Lab01 da disciplina, primeiro laboratório do semestre, que também dá início ao uso do GitHub Projects (v2) como quadro Kanban do grupo, mantido até o Lab05. O objeto de estudo são repositórios populares do GitHub, minerados via API GraphQL complementada por chamadas REST. O arquivo analisado nas RQ01–RQ07 é [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv), com 100 registros; as questões bônus usam os arquivos `tendencia_prs.csv`, `tendencia_tamanho_prs.csv` e `commits_por_issue.csv`, gerados sobre os 1000 repositórios mais populares.
 
 Como o CSV analisado não possui a linguagem primária dos repositórios, RQ05 e RQ07 não são respondidas nesta versão do relatório. Consequentemente, não foi necessário selecionar uma fonte externa de ranking de linguagens para interpretar os dados disponíveis.
 
@@ -164,6 +166,8 @@ mvn clean \
 
 O relatório Surefire dessa execução registrou oito cenários analisados, cinco executados, três ignorados (pertencentes à funcionalidade de fallback, não interpretados como resultados desta execução), nenhuma falha e nenhum erro.
 
+**Reprodutibilidade da coleta das RQBs.** A execução da RQB03 sobre os 1000 repositórios ocorreu em 27/08/2026, encerrando às 19:14 (BRT), com `AMOSTRA_ISSUES_COMMITS=10`, lotes de 10 combinações e nenhum lote perdido por falha da API. As três coletas de tendência são controladas por propriedades de configuração (`coletar-tendencia-prs`, `coletar-tamanho-prs`, `coletar-commits-por-issue`), o que permitiu executar a RQB03 isoladamente sem alterar o código: o padrão da aplicação continua sendo a coleta completa das três métricas.
+
 Os requisitos adicionais propostos tem, como principal objetivo, analisar o impacto que a adoção de ferramentas de inteligência artificial tem tido na cultura de desenvolvimento e nos hábitos de desenvolvedores. Todos os requisitos adicionais cobrem um período de quatro anos de ciclos de desenvolvimento — de 2022 à 2026 — compreendidos pelo grupo como intervalo capaz de englobar o início da popularização do uso de IA até seu atual estado de uso constante e proeminente observável hoje em dia.
 
 **RQV01** está relacionada à completude e à reprodutibilidade da coleta, e foi avaliada por três cenários: coleta de 100 repositórios com páginas de 10; encerramento natural quando `hasNextPage` é falso; e duas execuções da mesma coleta com os mesmos parâmetros.
@@ -271,11 +275,39 @@ A igualdade entre `total_chamadas` e `chamadas_unicas` nos cenários de paginaç
 
 Para os cenários reais de coleta sem falhas, o CSV de métricas registrou zero chamadas redundantes, taxa de redundância igual a zero e `tentativas_de_retry = 0`, valor compatível com uma execução em que a API respondeu normalmente — o que demonstra ausência de necessidade de recuperação, mas não comprova o funcionamento do retry após uma resposta `502`.
 
+#### Questões de Pesquisa Bônus — base de 1000 repositórios
+
+As RQB01–RQB03 usam uma base distinta das RQ01–RQ07: os **1000 repositórios** mais populares, e não os 100 descritos acima. Os resultados abaixo são agregados por ano, não por repositório.
+
+**RQB03 — Commits por issue fechada.** Coleta de 27/08/2026, 19:14 (BRT). Parâmetros: amostra de 10 issues por repositório/ano, 5.000 combinações repositório × ano em 500 requisições, 46 minutos de execução, **nenhum lote perdido**. Arquivo `commits_por_issue.csv`.
+
+| Ano | Média | Mediana | Issues amostradas | Issues fechadas | Fechadas com PR | Taxa de resolução por PR |
+|---|---:|---:|---:|---:|---:|---:|
+| 2022 | 3,96 | **2,0** | 3.851 | 367.632 | 75.130 | 20,44% |
+| 2023 | 6,31 | **2,0** | 4.510 | 452.401 | 90.612 | 20,03% |
+| 2024 | 8,36 | **2,0** | 4.626 | 475.827 | 98.012 | 20,60% |
+| 2025 | 4,95 | **2,0** | 4.913 | 503.194 | 101.346 | 20,14% |
+| 2026 | 7,11 | **2,0** | 5.810 | 551.499 | 155.372 | 28,17% |
+
+As colunas "Issues fechadas" e "Fechadas com PR" são contagens totais da população, não amostras; a média e a mediana cobrem apenas as 23.710 issues amostradas entre as fechadas com Pull Request vinculado. O ano de 2026 é parcial (coleta em 27 de agosto).
+
+Para a leitura conjunta da Seção 4.3, os resultados já coletados das outras duas questões bônus, na mesma base de 1000 repositórios:
+
+| Ano | PRs criados | PRs aceitos | Taxa de aceitação | Tamanho médio do PR aceito |
+|---|---:|---:|---:|---:|
+| 2022 | 535.174 | 379.790 | 70,97% | 1.235,08 linhas |
+| 2023 | 680.814 | 478.973 | 70,35% | 1.642,13 linhas |
+| 2024 | 807.694 | 578.173 | 71,58% | 1.295,41 linhas |
+| 2025 | 930.951 | 638.150 | 68,55% | 2.258,02 linhas |
+| 2026 | 1.262.393 | 698.534 | 55,33% | 2.548,91 linhas |
+
 ### 4.2 Visualização Gráfica
 
 Não foram incluídos gráficos nesta versão. A análise foi apresentada em tabelas descritivas porque o CSV contém apenas 100 registros e quatro dimensões analíticas principais: estrelas, idade, releases e recência do push. Gráficos para RQ02, RQ05, RQ06 e RQ07 exigiriam dados que não estão presentes no arquivo.
 
 Para RQV01 e RQV02, os resultados são binários/percentuais por cenário (aprovado/reprovado, percentuais de idempotência e redundância) e foram reportados diretamente nas tabelas da Seção 4.1, sem necessidade de visualização gráfica adicional.
+
+Para a RQB03, recomenda-se um gráfico de linha com duas séries — mediana de commits por issue e taxa de resolução por PR, esta em eixo secundário —, cobrindo 2022 a 2026. A segunda série é o que impede o leitor de interpretar uma mudança na população medida como mudança no esforço de desenvolvimento. Um gráfico de apenas uma série seria, neste caso, uma linha reta em 2,0: visualmente pobre, mas é precisamente esse o resultado.
 
 ### 4.3 Discussão
 
@@ -309,6 +341,38 @@ Não respondida. O CSV não contém o total de issues nem a quantidade de issues
 
 Não respondida. A comparação exigiria, no mínimo, linguagem primária, pull requests aceitas e agrupamento das métricas por linguagem, que não estão disponíveis no arquivo.
 
+**RQB03 — Issues têm sido fechadas com uma menor quantidade de commits atrelados?**
+
+**Hipótese refutada.** A mediana de commits por issue fechada foi **exatamente 2,0 em todos os cinco anos** analisados, sem qualquer tendência de queda. Não há evidência, nesta amostra de 23.710 issues distribuídas por 1000 repositórios, de que issues tenham passado a ser resolvidas com menos commits no período de popularização das ferramentas de IA.
+
+A estabilidade é o achado, e ela é notável: cinco anos, um universo de mais de 2,3 milhões de issues fechadas, e o valor central não se moveu uma única unidade. Se a adoção de IA alterou o processo de desenvolvimento — e as RQB01 e RQB02 indicam que algo mudou —, esse efeito **não aparece no número de commits necessários para fechar uma issue**.
+
+A média, por sua vez, oscilou entre 3,96 e 8,36 sem direção definida (subiu em 2023 e 2024, caiu em 2025, subiu em 2026). Essa divergência entre média instável e mediana imóvel é, por si só, um resultado metodológico: indica distribuição fortemente assimétrica, em que poucas issues resolvidas por Pull Requests muito grandes deslocam a média do ano inteiro. **Qualquer leitura baseada apenas na média teria produzido conclusões falsas** — por exemplo, "o esforço por issue dobrou entre 2022 e 2024", afirmação que a mediana desmente por completo. Foi exatamente esse risco, detectado durante a validação (Seção 3.5), que motivou a coleta da mediana.
+
+**Leitura conjunta das três questões bônus.** Tomadas em conjunto, as RQBs desenham um quadro coerente e mais interessante do que qualquer uma isolada:
+
+| Dimensão | 2022 | 2026 | Movimento |
+|---|---:|---:|---|
+| PRs criados (RQB01) | 535.174 | 1.262.393 | ↑ 136% |
+| Taxa de aceitação (RQB01) | 70,97% | 55,33% | ↓ 15,6 p.p. |
+| Tamanho médio do PR aceito (RQB02) | 1.235 linhas | 2.549 linhas | ↑ 106% |
+| Commits por issue, mediana (RQB03) | 2,0 | 2,0 | — estável |
+
+O volume de contribuições mais que dobrou e o tamanho dos PRs aceitos também, enquanto o número de commits por issue permaneceu constante. A implicação aritmética é direta: **os commits ficaram maiores**, não mais numerosos. A mesma quantidade de passos passou a carregar aproximadamente o dobro de código.
+
+Esse padrão é compatível com um cenário de assistência automatizada à escrita de código — em que o desenvolvedor produz mais linhas por iteração sem alterar o número de iterações necessárias para resolver uma issue —, mas **é apenas compatível, não uma demonstração**. A queda simultânea na taxa de aceitação (de 71% para 55%) admite leitura oposta e igualmente plausível: um volume maior de contribuições de qualidade inferior, que os mantenedores passaram a rejeitar mais.
+
+**Limitação central: a análise é correlacional, não causal.** Em nenhum momento a adoção de ferramentas de IA foi medida nos repositórios estudados — o ano-calendário é usado como *proxy* dessa adoção. Qualquer outro fenômeno do período (crescimento da automação de CI, mudança nas políticas de contribuição, atuação de bots, entrada de repositórios novos no topo do ranking) explica os mesmos dados igualmente bem. As RQBs descrevem **o que mudou** no ecossistema, não **por que** mudou.
+
+**Ameaças à validade específicas da RQB03:**
+
+1. **População restrita.** A métrica cobre apenas issues fechadas com Pull Request vinculado — entre 20% e 28% do total de issues fechadas. As demais foram fechadas sem código rastreável (duplicadas, dúvidas, *stale bots*) e estão fora da medição. A métrica de controle `taxa_resolucao_por_pr` foi reportada justamente para tornar essa fatia visível.
+2. **Mudança na fatia medida.** A taxa de resolução por PR foi estável entre 2022 e 2025 (20,0% a 20,6%), mas subiu para 28,17% em 2026. Como 2026 é ano parcial, não é possível distinguir efeito sazonal de mudança real de comportamento. Se a alta se confirmar, a população de 2026 difere das demais e a comparação direta com os outros anos fica enfraquecida.
+3. **Amostragem não aleatória.** A API de busca do GitHub não oferece amostragem aleatória, e toda ordenação disponível introduz viés sistemático (verificado empiricamente: ordenar por data de criação seleciona faxina de backlog fechada por bots). A coleta usa a ordem de relevância padrão da API, que não é aleatória.
+4. **Definição de "commits atrelados".** Conta-se `commits.totalCount` dos PRs que fecharam a issue, o que inclui *merges* e commits de correção de revisão. É deliberado — esses commits são parte do esforço de resolução —, mas afasta a métrica de uma contagem de "commits de implementação".
+5. **Projetos fora do GitHub Issues.** Repositórios que usam outros rastreadores (`django/django`, via Trac) ou listas de discussão (`torvalds/linux`) não contribuem com issues para a amostra. Não é falha de coleta, e sim característica real da população.
+6. **Teto de 10 Pull Requests por issue.** Issues resolvidas por mais de dez PRs têm o esforço subestimado. São raras e o efeito é desprezível diante da mediana.
+
 **RQV01 — completude e reprodutibilidade**
 
 Os testes apoiam parcialmente a RQV01: a paginação percorreu as páginas observadas sem repetir chamadas, a coleta encerrou corretamente após a indicação de ausência de próxima página, e duas execuções produziram resultados idênticos, com idempotência de 100%. A hipótese de completude, no entanto, não pode ser considerada totalmente comprovada apenas com esses artefatos, pois o cenário de paginação executado verifica somente que pelo menos um repositório foi coletado — não há comparação explícita entre `itens_coletados` e `itens_esperados`, e a métrica `cobertura_paginacao_pct` não apareceu no CSV desta execução.
@@ -341,6 +405,10 @@ Quanto à validação do pipeline de coleta: a execução real forneceu evidênc
 Em relação às RQ01–RQ07, a amostra apresenta repositórios com idade mediana de 95,50 meses, mediana de 15 releases e 81% de repositórios atualizados nos últimos 30 dias. Esses resultados indicam maturidade e atividade recente em boa parte da amostra, mas a grande variação nos totais de releases recomenda o uso da mediana junto da média. Não há dados suficientes para conclusões sobre pull requests, linguagens ou issues.
 
 A RQV01 foi atendida parcialmente, com evidência de paginação sem repetição e idempotência de 100%, mas ainda sem comprovação explícita de cobertura percentual de 100% dos itens esperados. A RQV02 também foi atendida parcialmente: a ausência de chamadas redundantes foi observada e o comportamento normal foi bem-sucedido, porém a recuperação específica de uma falha `502` não foi exercitada pela API real e, portanto, não pode ser declarada validada com base nesta execução.
+
+Quanto às questões bônus, coletadas sobre 1000 repositórios: a **RQB03 teve sua hipótese refutada**. A mediana de commits por issue fechada foi constante em 2,0 ao longo de todo o período de 2022 a 2026, sem qualquer tendência de redução. Lida junto das RQB01 e RQB02, a estabilidade ganha significado: no mesmo período em que o volume de Pull Requests e o tamanho médio dos PRs aceitos mais que dobraram, o número de commits necessários para fechar uma issue não se moveu — indicando commits maiores, e não mais numerosos. Reforça-se que o ano é apenas uma *proxy* da adoção de ferramentas de IA, não uma medida dela, e que nenhuma relação causal pode ser extraída destes dados.
+
+Registra-se também um resultado metodológico da RQB03: a média anual oscilou entre 3,96 e 8,36 enquanto a mediana permanecia imóvel. Caso o grupo tivesse reportado apenas a média — decisão adotada nas demais métricas deste laboratório —, o relatório teria descrito uma variação de esforço que não existe. Fica a recomendação, para os próximos laboratórios, de que métricas com distribuição de cauda longa sejam sempre reportadas com média e mediana lado a lado.
 
 Com mais tempo, o grupo expandiria essa inovação simulando a API do GitHub (mock de respostas 502) para validar deterministicamente o mecanismo de retry, e adicionaria a asserção explícita de `cobertura_paginacao_pct = 100%` ao cenário de paginação, hoje limitado à verificação de "ao menos 1 repositório".
 
