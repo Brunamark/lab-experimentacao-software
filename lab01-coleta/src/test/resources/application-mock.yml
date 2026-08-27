@@ -1,0 +1,14 @@
+github:
+  graphql:
+    url: http://localhost:8089/graphql
+  rest:
+    url: http://localhost:8089
+  token: test-token
+
+coleta:
+  total-repos: ${TOTAL_REPOS:20}
+  page-size: ${PAGE_SIZE:10}
+
+spring:
+  main:
+    web-application-type: none

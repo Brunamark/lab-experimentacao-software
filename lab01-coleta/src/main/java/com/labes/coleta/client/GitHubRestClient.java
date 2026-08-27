@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 public class GitHubRestClient {
 
     private static final Logger log = LoggerFactory.getLogger(GitHubRestClient.class);
-    private static final String URL_RELEASES =
-            "https://api.github.com/repos/{owner}/{nome}/releases?per_page=1";
 
     /** Casa o trecho {@code &page=6850>; rel="last"} do cabeçalho Link. */
     private static final Pattern ULTIMA_PAGINA =
@@ -64,7 +62,8 @@ public class GitHubRestClient {
 
         try {
             ResponseEntity<String> resposta = restTemplate.exchange(
-                    URL_RELEASES, HttpMethod.GET, new HttpEntity<>(headers), String.class,
+                    properties.getRest().url() + "/repos/{owner}/{nome}/releases?per_page=1",
+                    HttpMethod.GET, new HttpEntity<>(headers), String.class,
                     partes[0], partes[1]);
 
             String link = resposta.getHeaders().getFirst(HttpHeaders.LINK);

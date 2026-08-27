@@ -13,6 +13,7 @@ import com.labes.coleta.service.CsvExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
  * configurada como não-web (application.yml) e encerra sozinha ao final do run().
  */
 @Component
+@Profile("!mock & !test & !realtest")
 public class ColetaRunner implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(ColetaRunner.class);

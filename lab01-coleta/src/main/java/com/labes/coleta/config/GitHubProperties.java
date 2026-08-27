@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 public class GitHubProperties {
 
     private String token;
+    private ApiProperties graphql = new ApiProperties("https://api.github.com/graphql");
+    private ApiProperties rest = new ApiProperties("https://api.github.com");
     private int totalRepos = 100;
     private int pageSize = 50;
     private int anoInicioAnalise = 2022;
@@ -23,6 +25,22 @@ public class GitHubProperties {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public ApiProperties getGraphql() {
+        return graphql;
+    }
+
+    public void setGraphql(ApiProperties graphql) {
+        this.graphql = graphql;
+    }
+
+    public ApiProperties getRest() {
+        return rest;
+    }
+
+    public void setRest(ApiProperties rest) {
+        this.rest = rest;
     }
 
     public int getTotalRepos() {
@@ -41,27 +59,6 @@ public class GitHubProperties {
         this.pageSize = pageSize;
     }
 
-    public int getAnoInicioAnalise() {
-        return anoInicioAnalise;
-    }
-
-    public void setAnoInicioAnalise(int anoInicioAnalise) {
-        this.anoInicioAnalise = anoInicioAnalise;
-    }
-
-    public int getLimiteRepositoriosAnalisePrs() {
-        return limiteRepositoriosAnalisePrs;
-    }
-
-    public void setLimiteRepositoriosAnalisePrs(int limiteRepositoriosAnalisePrs) {
-        this.limiteRepositoriosAnalisePrs = limiteRepositoriosAnalisePrs;
-    }
-
-    public int getAmostraPrsTamanho() {
-        return amostraPrsTamanho;
-    }
-
-    public void setAmostraPrsTamanho(int amostraPrsTamanho) {
-        this.amostraPrsTamanho = amostraPrsTamanho;
+    public record ApiProperties(String url) {
     }
 }

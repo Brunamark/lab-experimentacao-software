@@ -1,6 +1,10 @@
 # Lab01 - Configuração da coleta de dados
 github:
   token: ${GITHUB_TOKEN}
+  graphql:
+    url: https://api.github.com/graphql
+  rest:
+    url: https://api.github.com
   total-repos: ${TOTAL_REPOS:100}
   # A API aceita até 100, mas com o bloco releases aninhado o GitHub estoura o próprio
   # tempo limite e responde 502. Repositórios caros de calcular (electron, tauri) derrubam

@@ -1,0 +1,10 @@
+github:
+  graphql:
+    url: https://api.github.com/graphql
+  rest:
+    url: https://api.github.com
+  token: ${GITHUB_TOKEN}
+
+coleta:
+  total-repos: ${TOTAL_REPOS:20}
+  page-size: ${PAGE_SIZE:10}
