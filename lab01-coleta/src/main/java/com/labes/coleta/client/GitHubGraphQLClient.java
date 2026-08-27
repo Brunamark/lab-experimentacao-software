@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Responsável apenas por falar com a API GraphQL do GitHub: monta a requisição,
@@ -85,16 +86,25 @@ public class GitHubGraphQLClient {
 
         HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
 
+        return executarComRetry(() -> enviar(entity), "Cursor da página: " + cursor);
+    }
+
+    /**
+     * Executa {@code operacao} com retry e backoff exponencial em caso de erro 5xx/rede —
+     * mesma proteção usada em {@link #buscarPagina}, reaproveitada pelas buscas em lote,
+     * que sofrem do mesmo problema de 502/504 intermitente em queries com conexões aninhadas.
+     */
+    private <T> T executarComRetry(Supplier<T> operacao, String contexto) {
         long espera = ESPERA_INICIAL_MS;
 
         for (int tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
             try {
-                return enviar(entity);
+                return operacao.get();
             } catch (HttpServerErrorException | ResourceAccessException e) {
                 if (tentativa == MAX_TENTATIVAS) {
                     throw new IllegalStateException(
-                            "API do GitHub falhou nas %d tentativas. Cursor da página: %s"
-                                    .formatted(MAX_TENTATIVAS, cursor), e);
+                            "API do GitHub falhou nas %d tentativas. %s"
+                                    .formatted(MAX_TENTATIVAS, contexto), e);
                 }
                 log.warn("Falha transitória da API ({}). Tentativa {}/{} — repetindo em {} ms.",
                         e.getClass().getSimpleName(), tentativa, MAX_TENTATIVAS, espera);
@@ -147,6 +157,10 @@ public class GitHubGraphQLClient {
 
         HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
 
+        return executarComRetry(() -> enviarLoteContagens(entity), "Busca de contagens em lote.");
+    }
+
+    private Map<String, IssueCountResult> enviarLoteContagens(HttpEntity<GraphQLRequest> entity) {
         ResponseEntity<GraphQLBatchResponse> response =
             restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLBatchResponse.class);
 
@@ -175,6 +189,10 @@ public class GitHubGraphQLClient {
 
         HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
 
+        return executarComRetry(() -> enviarLoteTamanhos(entity), "Busca de tamanhos de PRs em lote.");
+    }
+
+    private Map<String, PullRequestSizeResult> enviarLoteTamanhos(HttpEntity<GraphQLRequest> entity) {
         ResponseEntity<GraphQLSizeBatchResponse> response =
             restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLSizeBatchResponse.class);
 

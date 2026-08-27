@@ -28,6 +28,12 @@ public class ColetaTamanhoPRService {
     private static final Logger log = LoggerFactory.getLogger(ColetaTamanhoPRService.class);
     /** Menor que no ColetaPullRequestsService: cada alias traz até N nós, não uma contagem. */
     private static final int COMBINACOES_POR_LOTE = 10;
+    /**
+     * Pausa entre lotes bem-sucedidos. Sem isso, uma coleta de 1000 repositórios dispara
+     * centenas de requisições sequenciais sem folga, o que aumenta a chance de estourar o
+     * rate limit secundário do GitHub e receber 502/504 (esgotando as tentativas do client).
+     */
+    private static final long PAUSA_ENTRE_LOTES_MS = 500;
 
     private final GitHubGraphQLClient client;
     private final GitHubProperties properties;
@@ -61,7 +67,17 @@ public class ColetaTamanhoPRService {
 
         for (int inicio = 0; inicio < combinacoes.size(); inicio += COMBINACOES_POR_LOTE) {
             List<Combinacao> lote = combinacoes.subList(inicio, Math.min(inicio + COMBINACOES_POR_LOTE, combinacoes.size()));
-            Map<String, PullRequestSizeResult> resultado = client.buscarTamanhosEmLote(montarQuery(lote, anoAtual));
+            Map<String, PullRequestSizeResult> resultado;
+            try {
+                resultado = client.buscarTamanhosEmLote(montarQuery(lote, anoAtual));
+            } catch (RuntimeException e) {
+                // Mesmo depois do retry do client, um lote pode continuar batendo 502 (ex.:
+                // repositório caro de indexar naquele ano). Pular esse lote em vez de abortar
+                // a coleta inteira preserva as centenas de combinações já processadas.
+                log.warn("Lote {}-{} falhou mesmo após retries — pulando ({} combinações perdidas).",
+                        inicio, inicio + lote.size() - 1, lote.size(), e);
+                continue;
+            }
 
             for (int i = 0; i < lote.size(); i++) {
                 Combinacao c = lote.get(i);
@@ -84,6 +100,10 @@ public class ColetaTamanhoPRService {
 
             log.info("Lote de tamanho de PRs processado: {}/{} combinações",
                     Math.min(inicio + lote.size(), combinacoes.size()), combinacoes.size());
+
+            if (inicio + COMBINACOES_POR_LOTE < combinacoes.size()) {
+                aguardar(PAUSA_ENTRE_LOTES_MS);
+            }
         }
 
         return anos.stream()
@@ -112,6 +132,15 @@ public class ColetaTamanhoPRService {
         }
 
         return sb.append("}").toString();
+    }
+
+    private void aguardar(long milissegundos) {
+        try {
+            Thread.sleep(milissegundos);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Coleta interrompida durante a pausa entre lotes.", e);
+        }
     }
 
     private record Combinacao(String repositorio, int ano) {
