@@ -13,10 +13,10 @@ public class GitHubProperties {
     private String token;
     private ApiProperties graphql = new ApiProperties("https://api.github.com/graphql");
     private ApiProperties rest = new ApiProperties("https://api.github.com");
-    private int totalRepos = 100;
+    private int totalRepos = 1000;
     private int pageSize = 50;
     private int anoInicioAnalise = 2022;
-    private int limiteRepositoriosAnalisePrs = 100;
+    private int limiteRepositoriosAnalisePrs = 1000;
     private int amostraPrsTamanho = 10;
 
     public String getToken() {
@@ -61,4 +61,10 @@ public class GitHubProperties {
 
     public record ApiProperties(String url) {
     }
+
+    public int getLimiteRepositoriosAnalisePrs() { return limiteRepositoriosAnalisePrs; };
+
+    public int getAnoInicioAnalise() { return anoInicioAnalise; }
+
+    public int getAmostraPrsTamanho() { return  amostraPrsTamanho; }
 }
