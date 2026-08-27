@@ -1,4 +1,5 @@
 # language: pt
+@mock
 Funcionalidade: Comportamento de fallback
   Como responsável pela coleta de dados do GitHub
   Quero que o fallback da API REST seja acionado apenas quando necessário
