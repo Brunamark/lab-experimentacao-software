@@ -75,6 +75,13 @@ public class ColetaService {
 
                 int totalReleases = node.releases() == null ? 0 : node.releases().totalCount();
 
+                // Conexoes aninhadas podem faltar: linguagem e nula em repositorio que nao e
+                // codigo, e as contagens somem quando o recurso esta desabilitado.
+                String linguagem = node.primaryLanguage() == null ? "" : node.primaryLanguage().name();
+                int issuesAbertas = node.issuesAbertas() == null ? 0 : node.issuesAbertas().totalCount();
+                int issuesFechadas = node.issuesFechadas() == null ? 0 : node.issuesFechadas().totalCount();
+                int prsAceitas = node.prsAceitas() == null ? 0 : node.prsAceitas().totalCount();
+
                 resultado.add(new RepositorioMetrica(
                         node.nameWithOwner(),
                         node.stargazerCount(),
@@ -82,7 +89,11 @@ public class ColetaService {
                         totalReleases,
                         node.pushedAt(),
                         node.updatedAt(),
-                        diasDesdeUltimoPush));
+                        diasDesdeUltimoPush,
+                        linguagem,
+                        issuesAbertas,
+                        issuesFechadas,
+                        prsAceitas));
             }
 
             hasNextPage = pagina.pageInfo().hasNextPage();

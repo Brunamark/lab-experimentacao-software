@@ -18,6 +18,10 @@ public class GitHubProperties {
     private int anoInicioAnalise = 2022;
     private int limiteRepositoriosAnalisePrs = 10;
     private int amostraPrsTamanho = 10;
+    private int amostraIssuesCommits = 10;
+    private boolean coletarTendenciaPrs = true;
+    private boolean coletarTamanhoPrs = true;
+    private boolean coletarCommitsPorIssue = true;
 
     public String getToken() {
         return token;
@@ -81,6 +85,38 @@ public class GitHubProperties {
 
     public void setAmostraPrsTamanho(int amostraPrsTamanho) {
         this.amostraPrsTamanho = amostraPrsTamanho;
+    }
+
+    public int getAmostraIssuesCommits() {
+        return amostraIssuesCommits;
+    }
+
+    public void setAmostraIssuesCommits(int amostraIssuesCommits) {
+        this.amostraIssuesCommits = amostraIssuesCommits;
+    }
+
+    public boolean isColetarTendenciaPrs() {
+        return coletarTendenciaPrs;
+    }
+
+    public void setColetarTendenciaPrs(boolean coletarTendenciaPrs) {
+        this.coletarTendenciaPrs = coletarTendenciaPrs;
+    }
+
+    public boolean isColetarTamanhoPrs() {
+        return coletarTamanhoPrs;
+    }
+
+    public void setColetarTamanhoPrs(boolean coletarTamanhoPrs) {
+        this.coletarTamanhoPrs = coletarTamanhoPrs;
+    }
+
+    public boolean isColetarCommitsPorIssue() {
+        return coletarCommitsPorIssue;
+    }
+
+    public void setColetarCommitsPorIssue(boolean coletarCommitsPorIssue) {
+        this.coletarCommitsPorIssue = coletarCommitsPorIssue;
     }
 
     public record ApiProperties(String url) {

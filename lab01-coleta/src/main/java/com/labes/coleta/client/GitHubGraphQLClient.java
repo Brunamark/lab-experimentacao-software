@@ -4,7 +4,9 @@ import com.labes.coleta.config.GitHubProperties;
 import com.labes.coleta.dto.GraphQLBatchResponse;
 import com.labes.coleta.dto.GraphQLRequest;
 import com.labes.coleta.dto.GraphQLResponse;
+import com.labes.coleta.dto.GraphQLIssueCommitsBatchResponse;
 import com.labes.coleta.dto.GraphQLSizeBatchResponse;
+import com.labes.coleta.dto.IssueCommitsResult;
 import com.labes.coleta.dto.IssueCountResult;
 import com.labes.coleta.dto.PullRequestSizeResult;
 import com.labes.coleta.dto.SearchResult;
@@ -197,6 +199,40 @@ public class GitHubGraphQLClient {
             restTemplate.postForEntity(properties.getGraphql().url(), entity, GraphQLSizeBatchResponse.class);
 
         GraphQLSizeBatchResponse body = response.getBody();
+
+        if (body == null || body.data() == null) {
+            throw new IllegalStateException("Resposta vazia ou inválida da API do GitHub.");
+        }
+        if (body.errors() != null && !body.errors().isEmpty()) {
+            throw new IllegalStateException("Erro retornado pela API GraphQL: " + body.errors());
+        }
+
+        return body.data();
+    }
+
+    /**
+     * Como {@link #buscarTamanhosEmLote}, mas para queries que retornam issues fechadas
+     * junto do evento que as fechou (RQB03).
+     */
+    public Map<String, IssueCommitsResult> buscarCommitsPorIssueEmLote(String queryMontada) {
+        GraphQLRequest requestBody = new GraphQLRequest(queryMontada, Map.of());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(properties.getToken());
+
+        HttpEntity<GraphQLRequest> entity = new HttpEntity<>(requestBody, headers);
+
+        return executarComRetry(() -> enviarLoteCommitsPorIssue(entity),
+                "Busca de commits por issue em lote.");
+    }
+
+    private Map<String, IssueCommitsResult> enviarLoteCommitsPorIssue(HttpEntity<GraphQLRequest> entity) {
+        ResponseEntity<GraphQLIssueCommitsBatchResponse> response =
+            restTemplate.postForEntity(properties.getGraphql().url(), entity,
+                    GraphQLIssueCommitsBatchResponse.class);
+
+        GraphQLIssueCommitsBatchResponse body = response.getBody();
 
         if (body == null || body.data() == null) {
             throw new IllegalStateException("Resposta vazia ou inválida da API do GitHub.");
