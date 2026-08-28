@@ -90,13 +90,6 @@ O processo seguiu a estrutura de sprints definida no enunciado (Lab01S01 a S03 +
 | Lab01S03 | Análise descritiva dos atributos disponíveis; validação automatizada do pipeline de coleta (cenários RQV01/RQV02) como inovação metodológica; coleta de dados históricos para RQB01–RQB03. | Grupo | A definir no board |
 | Relatório Final | Elaboração do documento final, incluindo print do board e política de WIP em uso. | Grupo | A definir no board |
 
-**Configuração do processo**
-
-Colunas do board (campo Status): `Backlog → To Do → Doing → Review → Done`.
-
-Política de limite de WIP para a coluna Doing: no máximo dois itens simultaneamente. Uma nova tarefa só entra em `Doing` quando uma tarefa existente avançar para `Review` ou `Done`.
-
-> *[inserir aqui o print do quadro Kanban (GitHub Projects) ao final do laboratório]*
 
 ### 3.4 Ferramentas
 
