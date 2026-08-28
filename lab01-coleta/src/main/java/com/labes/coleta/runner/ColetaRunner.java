@@ -6,6 +6,9 @@ import com.labes.coleta.service.AnaliseAtualizacaoService;
 import com.labes.coleta.model.TendenciaAnualCommitsPorIssue;
 import com.labes.coleta.model.TendenciaAnualPullRequests;
 import com.labes.coleta.model.TendenciaAnualTamanhoPR;
+import com.labes.coleta.service.AnaliseContribuicaoService;
+import com.labes.coleta.service.AnaliseIssuesService;
+import com.labes.coleta.service.AnaliseLinguagemService;
 import com.labes.coleta.service.AnaliseMaturidadeService;
 import com.labes.coleta.service.AnaliseReleasesService;
 import com.labes.coleta.service.ColetaCommitsPorIssueService;
@@ -36,6 +39,16 @@ public class ColetaRunner implements CommandLineRunner {
     private static final String ARQUIVO_SAIDA_TAMANHO_PRS = "tendencia_tamanho_prs.csv";
     private static final String ARQUIVO_SAIDA_COMMITS_POR_ISSUE = "commits_por_issue.csv";
 
+    /** Quantas linguagens entram na tabela de distribuição da RQ05. */
+    private static final int TOP_LINGUAGENS = 12;
+
+    /**
+     * Mínimo de repositórios para uma linguagem entrar no recorte da RQ07. Sem esse piso, uma
+     * linguagem com dois repositórios apareceria na tabela com a mesma autoridade que uma com
+     * cento e cinquenta.
+     */
+    private static final int PISO_RQ07 = 10;
+
     private final ColetaService coletaService;
     private final CsvExportService csvExportService;
     private final AnaliseMaturidadeService analiseMaturidadeService;
@@ -44,6 +57,9 @@ public class ColetaRunner implements CommandLineRunner {
     private final ColetaPullRequestsService coletaPullRequestsService;
     private final ColetaTamanhoPRService coletaTamanhoPRService;
     private final ColetaCommitsPorIssueService coletaCommitsPorIssueService;
+    private final AnaliseLinguagemService analiseLinguagemService;
+    private final AnaliseIssuesService analiseIssuesService;
+    private final AnaliseContribuicaoService analiseContribuicaoService;
     private final GitHubProperties properties;
 
     public ColetaRunner(ColetaService coletaService, CsvExportService csvExportService,
@@ -53,6 +69,9 @@ public class ColetaRunner implements CommandLineRunner {
                          ColetaPullRequestsService coletaPullRequestsService,
                          ColetaTamanhoPRService coletaTamanhoPRService,
                          ColetaCommitsPorIssueService coletaCommitsPorIssueService,
+                         AnaliseLinguagemService analiseLinguagemService,
+                         AnaliseIssuesService analiseIssuesService,
+                         AnaliseContribuicaoService analiseContribuicaoService,
                          GitHubProperties properties) {
         this.coletaService = coletaService;
         this.csvExportService = csvExportService;
@@ -62,6 +81,9 @@ public class ColetaRunner implements CommandLineRunner {
         this.coletaPullRequestsService = coletaPullRequestsService;
         this.coletaTamanhoPRService = coletaTamanhoPRService;
         this.coletaCommitsPorIssueService = coletaCommitsPorIssueService;
+        this.analiseLinguagemService = analiseLinguagemService;
+        this.analiseIssuesService = analiseIssuesService;
+        this.analiseContribuicaoService = analiseContribuicaoService;
         this.properties = properties;
     }
 
@@ -93,6 +115,36 @@ public class ColetaRunner implements CommandLineRunner {
                 analiseAtualizacaoService.percentualAtualizadosUltimos30Dias(repositorios));
         log.info("Distribuição por faixa de recência: {}",
                 analiseAtualizacaoService.distribuicaoPorFaixa(repositorios));
+
+        log.info("RQ02 | PRs aceitos — média: {} | mediana: {} | total na amostra: {}",
+                analiseContribuicaoService.mediaPrsAceitos(repositorios),
+                analiseContribuicaoService.medianaPrsAceitos(repositorios),
+                analiseContribuicaoService.totalPrsAceitos(repositorios));
+
+        log.info("RQ05 | Linguagens mais frequentes: {}",
+                analiseLinguagemService.topLinguagens(repositorios, TOP_LINGUAGENS));
+        log.info("RQ05 | Sem linguagem primária (repositórios de conteúdo): {} ({}%)",
+                analiseLinguagemService.quantidadeSemLinguagem(repositorios),
+                analiseLinguagemService.percentualSemLinguagem(repositorios));
+
+        log.info("RQ06 | Issues fechadas — razão agregada: {}% | mediana dos percentuais: {}%",
+                analiseIssuesService.percentualFechadasAgregado(repositorios),
+                analiseIssuesService.percentualFechadasMediana(repositorios));
+        log.info("RQ06 | Repositórios com ao menos 90% fechadas: {} | sem nenhuma issue: {}",
+                analiseIssuesService.quantidadeAcimaDe90(repositorios),
+                analiseIssuesService.quantidadeSemIssues(repositorios));
+
+        // RQ07: as mesmas métricas das RQ02/RQ03/RQ04, agora por linguagem. Nenhum service novo
+        // é necessário porque todos recebem a lista por parâmetro. Os métodos *Top15 ficam de
+        // fora: eles pressupõem a lista ordenada por estrelas, o que não vale numa sublista.
+        var porLinguagem = analiseLinguagemService.agruparPorLinguagem(repositorios, PISO_RQ07);
+        log.info("RQ07 | {} linguagens com ao menos {} repositórios:", porLinguagem.size(), PISO_RQ07);
+        porLinguagem.forEach((linguagem, repos) ->
+                log.info("RQ07 | {} ({} repos) — PRs aceitos (mediana): {} | releases (média): {} | dias desde o push (média): {}",
+                        linguagem, repos.size(),
+                        analiseContribuicaoService.medianaPrsAceitos(repos),
+                        analiseReleasesService.mediaReleases(repos),
+                        analiseAtualizacaoService.mediaDiasDesdeUltimoPush(repos)));
 
         var semDataDePush = analiseAtualizacaoService.quantidadeSemDataDePush(repositorios);
         if (semDataDePush > 0) {

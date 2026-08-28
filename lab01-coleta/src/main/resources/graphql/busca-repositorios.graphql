@@ -15,6 +15,18 @@ query BuscaRepositorios($queryString: String!, $qtd: Int!, $cursor: String) {
         releases {
           totalCount
         }
+        primaryLanguage {
+          name
+        }
+        issuesAbertas: issues(states: OPEN) {
+          totalCount
+        }
+        issuesFechadas: issues(states: CLOSED) {
+          totalCount
+        }
+        prsAceitas: pullRequests(states: MERGED) {
+          totalCount
+        }
       }
     }
   }

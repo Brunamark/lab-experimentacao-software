@@ -18,7 +18,8 @@ import java.util.List;
 public class CsvExportService {
 
     private static final String CABECALHO =
-            "nome,estrelas,idade_meses,total_releases,ultimo_push,ultima_atualizacao,dias_desde_ultimo_push";
+            "nome,estrelas,idade_meses,total_releases,ultimo_push,ultima_atualizacao,"
+                    + "dias_desde_ultimo_push,linguagem,issues_abertas,issues_fechadas,prs_aceitas";
     private static final String CABECALHO_TENDENCIA_PRS = "ano,prs_criadas,prs_aceitas,taxa_aceitacao";
     private static final String CABECALHO_TAMANHO_PRS = "ano,tamanho_medio_linhas,amostra_prs";
     private static final String CABECALHO_COMMITS_POR_ISSUE =
@@ -35,7 +36,12 @@ public class CsvExportService {
                     .append(r.totalReleases()).append(',')
                     .append(data(r.ultimoPush())).append(',')
                     .append(data(r.ultimaAtualizacao())).append(',')
-                    .append(r.diasDesdeUltimoPush())
+                    .append(r.diasDesdeUltimoPush()).append(',')
+                    // Linguagem entre aspas: há nomes com espaço ("Jupyter Notebook", "Vim Script").
+                    .append('"').append(r.linguagem()).append("\",")
+                    .append(r.issuesAbertas()).append(',')
+                    .append(r.issuesFechadas()).append(',')
+                    .append(r.prsAceitas())
                     .append('\n');
         }
 

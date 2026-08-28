@@ -37,7 +37,7 @@ Hipóteses informais do grupo, confrontadas com a amostra disponível:
 - **RQ06:** espera-se que uma parcela relevante das issues esteja fechada.
 - **RQ07:** espera-se que as métricas de contribuição, releases e atualização variem entre linguagens.
 
-As hipóteses de RQ05, RQ06 e RQ07 não podem ser confrontadas com este arquivo, pois seus atributos (linguagem primária, issues fechadas/total) não estão presentes no CSV de repositórios. A RQ02 é parcialmente endereçada pelos dados agregados de PRs da RQB01.
+Todas as sete hipóteses foram confrontadas com os dados coletados.
 
 Além do enunciado, o grupo propôs duas Questões de Pesquisa de Validação (RQV1 e RQV2) e três Questões de Pesquisa Bônus (RQB01, RQB02 e RQB03). As de primeiro tipo são voltadas não às características dos repositórios em si, mas à confiabilidade do próprio pipeline de coleta de dados construído para responder às RQ01–RQ07, já as segundas buscam analisar impactos na adoção de ferramentas de Inteligência Artificial à cultura de desenvolvimento. Seguem as questões em detalhe:
 
@@ -55,7 +55,7 @@ O detalhamento da metodologia usada para validação dos requisitos adicionais s
 
 Este relatório documenta o Lab01 da disciplina, primeiro laboratório do semestre, que também dá início ao uso do GitHub Projects (v2) como quadro Kanban do grupo, mantido até o Lab05. O objeto de estudo é uma amostra de 1.000 repositórios populares do GitHub, minerados via API GraphQL complementada por chamadas REST. Os arquivos analisados são [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv), [tendencia_prs.csv](../lab01-coleta/tendencia_prs.csv), [tendencia_tamanho_prs.csv](../lab01-coleta/tendencia_tamanho_prs.csv) e [commits_por_issue.csv](../lab01-coleta/commits_por_issue.csv).
 
-Como o CSV de repositórios não possui a linguagem primária, RQ05 e RQ07 não são respondidas nesta versão do relatório. Consequentemente, não foi necessário selecionar uma fonte externa de ranking de linguagens para interpretar os dados disponíveis.
+A RQ05 compara a amostra com as linguagens mais populares do ecossistema, o que exige uma referência externa. O grupo adotou o **GitHub Octoverse** como fonte de ranking, por medir o mesmo ecossistema que estamos analisando — TIOBE mede volume de busca na web e GitHut mede outra fatia do próprio GitHub, o que tornaria a comparação menos direta. *[preencher: edição e data de consulta do Octoverse]*
 
 Como base metodológica para a validação da confiabilidade do pipeline de coleta (RQV01 e RQV02), o grupo utilizou cenários de teste de comportamento (BDD) escritos em Cucumber/Gherkin, executados contra a API real do GitHub sob o perfil `realtest`, tratando o próprio processo de extração de dados como objeto de verificação, e não apenas os dados extraídos.
 
@@ -118,9 +118,9 @@ A tabela abaixo relaciona cada Questão de Pesquisa do enunciado à sua métrica
 | RQ02 | Total de pull requests aceitas | Contagem de PRs com estado "merged" no repositório | Nº de PRs | `tendencia_prs.csv` (agregado anual) |
 | RQ03 | Total de releases | Contagem de releases publicadas no repositório | Nº de releases | `total_releases` no CSV, via GraphQL |
 | RQ04 | Tempo até a última atualização | Diferença entre a data da coleta e o último push | Dias | `dias_desde_ultimo_push` no CSV, via GraphQL |
-| RQ05 | Linguagem primária de cada repositório | Linguagem principal reportada pela API | Categórica | Não coletada neste CSV |
-| RQ06 | Razão entre issues fechadas e total de issues | `issues_fechadas / issues_totais` | Percentual | Não coletada neste CSV |
-| RQ07 | RQ02, RQ03 e RQ04 segmentadas por linguagem | Métricas agrupadas pela linguagem primária | Conforme métrica de origem | Não calculável sem linguagem e PRs por repo |
+| RQ05 | Linguagem primária de cada repositório | Linguagem principal reportada pela API, escolhida por volume de bytes | Categórica | `linguagem` no CSV, via GraphQL |
+| RQ06 | Razão entre issues fechadas e total de issues | `issues_fechadas / (issues_abertas + issues_fechadas)`, agregada sobre a amostra | Percentual | `issues_abertas` e `issues_fechadas` no CSV, via GraphQL |
+| RQ07 | RQ02, RQ03 e RQ04 segmentadas por linguagem | Métricas agrupadas pela linguagem primária, com piso de 10 repositórios por grupo | Conforme métrica de origem | Derivada do mesmo CSV |
 
 A tabela seguinte apresenta as métricas adicionais definidas pelo grupo para validar a confiabilidade do pipeline de coleta (RQV1 e RQV2), detalhadas na Seção 3.6.
 
@@ -218,7 +218,7 @@ A M3.6 é a mais importante das três de controle. A média de commits por issue
 
 ### 4.1 Coleta de Dados
 
-O arquivo [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv) possui **1.000 registros** de repositórios e sete colunas: `nome`, `estrelas`, `idade_meses`, `total_releases`, `ultimo_push`, `ultima_atualizacao` e `dias_desde_ultimo_push`. A coleta foi realizada em 27 de agosto de 2026, conforme as datas presentes nos registros. Os arquivos complementares `tendencia_prs.csv` e `tendencia_tamanho_prs.csv` agregam, por ano, métricas de Pull Requests para a mesma população de 1.000 repositórios.
+O arquivo [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv) possui **1.000 registros** de repositórios e onze colunas: `nome`, `estrelas`, `idade_meses`, `total_releases`, `ultimo_push`, `ultima_atualizacao`, `dias_desde_ultimo_push`, `linguagem`, `issues_abertas`, `issues_fechadas` e `prs_aceitas`. A coleta foi realizada em 27 de agosto de 2026, conforme as datas presentes nos registros. Os arquivos complementares `tendencia_prs.csv` e `tendencia_tamanho_prs.csv` agregam, por ano, métricas de Pull Requests para a mesma população de 1.000 repositórios.
 
 #### Perfil descritivo da amostra
 
@@ -244,9 +244,9 @@ O arquivo [repositorios_top100.csv](../lab01-coleta/repositorios_top100.csv) pos
 
 O repositório com mais estrelas na amostra é `codecrafters-io/build-your-own-x`, com 543.359 estrelas. Os maiores totais de releases foram observados em `ggml-org/llama.cpp` (6.967), `gradio-app/gradio` (5.095), `vercel/next.js` (3.824), `lobehub/lobehub` (3.044) e `withastro/astro` (3.217).
 
-**Análise crítica da amostra.** A distribuição de estrelas apresenta assimetria positiva extrema (skewness = 4,14): 52,1% dos repositórios concentram-se abaixo de 50 mil estrelas, enquanto apenas 1,1% ultrapassam 300 mil. Essa concentração indica que a "popularidade" no GitHub não segue uma distribuição normal, mas sim um padrão de cauda longa típico de fenômenos de rede. Curiosamente, os 11 repositórios com mais de 300 mil estrelas são, em média, mais antigos (118,3 meses) do que a mediana geral (92 meses), sugerindo que a ultra-popularidade pode estar associada à maturidade embora a correlação de Pearson entre estrelas e idade no conjunto completo seja praticamente nula (r ≈ 0,000), o que invalida qualquer relação linear generalizada entre essas variáveis.
+**Análise crítica da amostra.** A distribuição de estrelas é fortemente desequilibrada: 52,1% dos repositórios concentram-se abaixo de 50 mil estrelas, enquanto apenas 1,1% ultrapassam 300 mil. Essa concentração indica que a "popularidade" no GitHub não segue uma distribuição normal, mas sim um padrão de cauda longa típico de fenômenos de rede. Curiosamente, os 11 repositórios com mais de 300 mil estrelas são, em média, mais antigos (118,3 meses) do que a mediana geral (92 meses), sugerindo que a ultra-popularidade pode estar associada à maturidade. No conjunto completo, porém, **não existe relação alguma entre idade e número de estrelas**: cruzando as duas variáveis nos 1.000 repositórios, uma não ajuda em nada a prever a outra.
 
-A distribuição de releases é ainda mais assimétrica (skewness = 8,62): o percentil 99 situa-se em 1.688 releases, enquanto 27,6% dos repositórios não possuem nenhuma release registrada. Essa dualidade reflete a heterogeneidade da amostra, que inclui tanto bibliotecas de software com ciclos de release intensos quanto repositórios de conteúdo (listas "awesome", tutoriais, roadmaps) que não utilizam o mecanismo de release do GitHub. Uma classificação heurística identificou 124 repositórios de conteúdo (12,4%), dos quais 76,6% não possuem releases contra apenas 20,7% dos 876 repositórios de código. Essa segmentação é crucial para a interpretação da RQ03: se excluídos os repositórios de conteúdo, a média de releases sobe de 156,7 para 174,4 e a mediana de 41 para 55,5.
+A distribuição de releases é ainda mais desequilibrada: o percentil 99 situa-se em 1.688 releases, enquanto 27,6% dos repositórios não possuem nenhuma release registrada. Essa dualidade reflete a heterogeneidade da amostra, que inclui tanto bibliotecas de software com ciclos de release intensos quanto repositórios de conteúdo (listas "awesome", tutoriais, roadmaps) que não utilizam o mecanismo de release do GitHub. Uma classificação heurística identificou 124 repositórios de conteúdo (12,4%), dos quais 76,6% não possuem releases contra apenas 20,7% dos 876 repositórios de código. Essa segmentação é crucial para a interpretação da RQ03: se excluídos os repositórios de conteúdo, a média de releases sobe de 156,7 para 174,4 e a mediana de 41 para 55,5.
 
 #### Perfil descritivo das tendências de PRs (RQB01 e RQB02)
 
@@ -307,20 +307,23 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 
 #### RQ01 Sistemas populares são maduros/antigos?
 
-**Hipótese parcialmente confirmada, com ressalvas estatísticas significativas.** A idade média foi de 91,19 meses (~7,6 anos) e a mediana de 92,00 meses (~7,7 anos), com amplitude de 0 a 220 meses (~18,3 anos). A distribuição de idade é aproximadamente simétrica (skewness = 0,07), o que confere robustez à mediana como estimador central.
+**Hipótese parcialmente confirmada, com ressalvas importantes.** A idade média foi de 91,19 meses (~7,6 anos) e a mediana de 92,00 meses (~7,7 anos), com amplitude de 0 a 220 meses (~18,3 anos). Média e mediana praticamente coincidem, o que indica uma distribuição equilibrada e torna a mediana um bom valor de referência.
 
 **Pontos críticos:**
-- **Ausência de correlação linear:** o coeficiente de correlação de Pearson entre estrelas e idade é praticamente nulo (r ≈ 0,000), o que significa que, no conjunto dos 1.000 repositórios mais populares, a idade não prediz a popularidade e vice-versa. A hipótese de que "sistemas populares são maduros" não se sustenta como relação geral embora os 11 repositórios mais estrelados (>300k) sejam, em média, mais antigos (118 meses), esse padrão não se estende ao restante da amostra.
+- **Idade não explica popularidade:** cruzando idade e número de estrelas nos 1.000 repositórios, **não há relação entre as duas variáveis** — saber a idade de um repositório não ajuda a prever quantas estrelas ele tem, nem o contrário. É o principal achado da RQ01: a afirmação "sistemas populares são maduros" não se sustenta como regra geral. Os 11 repositórios mais estrelados (>300k) são de fato mais antigos que a mediana (118 contra 92 meses), mas esse padrão vale só para o topo absoluto e não se estende ao restante da amostra.
 - **Bimodalidade oculta:** 8,3% dos repositórios têm menos de 1 ano de idade, enquanto 34,3% têm mais de 10 anos. Essa dualidade sugere dois caminhos distintos para a popularidade: (i) explosões virais de repositórios novos (ex.: `deepseek-ai/deepseek-harness`, 0 meses, 199.706 estrelas) e (ii) acumulação gradual de estrelas em projetos legados (ex.: `rails/rails`, 220 meses, 84.880 estrelas).
 - **Viés de sobrevivência:** repositórios antigos que permanecem no top-1.000 são, por definição, os que sobreviveram. Não é possível inferir, a partir desta amostra, se a maioria dos repositórios antigos se torna popular apenas que os populares que são antigos permanecem visíveis.
 
 #### RQ02 Sistemas populares recebem muita contribuição externa?
 
-**Parcialmente endereçada via dados agregados da RQB01.** O CSV de repositórios não contém a contagem de PRs aceitas por repositório, impedindo uma análise individual. Entretanto, os dados agregados anuais (`tendencia_prs.csv`) revelam um volume massivo de contribuição: em 2026, foram criadas 1.262.393 PRs e aceitas 698.534 apenas nos 1.000 repositórios da amostra.
+**Hipótese confirmada.** Os 1.000 repositórios acumulam **4.271.085 pull requests aceitos**, com **mediana de 773,5** por repositório e média de 4.271,09. Metade da amostra já incorporou mais de setecentas contribuições externas — volume que confirma a hipótese com folga.
+
+A distância entre média e mediana (5,5:1) revela a assimetria de sempre: `firstcontributions/first-contributions` lidera com **103.761** PRs aceitos, seguido de `llvm/llvm-project` (98.436) e `elastic/elasticsearch` (96.052). O primeiro é um caso à parte — existe justamente para ensinar pessoas a abrir seu primeiro PR — e ilustra por que a mediana é o valor de referência aqui.
 
 **Pontos críticos:**
 - **Crescimento desproporcional:** o volume de PRs criadas cresceu 135,9% de 2022 a 2026, enquanto o de PRs aceitas cresceu apenas 83,9%. Essa divergência indica que a barreira de entrada para contribuição diminuiu (mais pessoas abrem PRs), mas a curadoria se manteve rigorosa ou se tornou mais seletiva.
-- **Queda abrupta da taxa de aceitação em 2026:** a taxa caiu de ~71% (2022–2024) para 55,33% em 2026, uma queda de 15,64 pontos percentuais. Esse é o achado mais crítico da RQB01 e será discutido na Seção 4.3.1.
+- **Queda abrupta da taxa de aceitação em 2026:** a taxa caiu de ~71% (2022–2024) para 55,33% em 2026, uma queda de 15,64 pontos percentuais. Esse é o achado mais crítico da RQB01 e é discutido na Seção 4.2.1.
+- **Limite da métrica:** `pullRequests(states: MERGED)` conta PRs de **qualquer autor**, inclusive membros do próprio time. "Contribuição externa" no sentido estrito exigiria comparar o autor com a organização dona do repositório, o que não foi feito.
 
 #### RQ03 Sistemas populares lançam releases com frequência?
 
@@ -329,7 +332,6 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 **Pontos críticos:**
 - **Efeito dos repositórios de conteúdo:** 124 repositórios de conteúdo (listas "awesome", tutoriais, roadmaps) compõem 12,4% da amostra, mas 76,6% deles não possuem releases. Se excluídos, a mediana de releases sobe de 41 para 55,5 e a proporção de repos sem release cai de 27,6% para 20,7%. Isso demonstra que a métrica de releases é sensível à composição da amostra e não deve ser interpretada uniformemente para todos os tipos de projeto.
 - **Frequência temporal:** entre os 724 repositórios com pelo menos uma release, a média de releases por ano de existência é de 54,1, mas a mediana é de apenas 15,1. Isso significa que metade dos projetos com releases lança, no máximo, uma versão a cada 3–4 semanas, frequência considerada baixa para projetos que seguem práticas de entrega contínua.
-- **Correlação negativa com recência:** há uma correlação negativa fraca entre total de releases e dias desde o último push (r ≈ −0,130), sugerindo que projetos com mais releases tendem a ser ligeiramente mais ativos embora a magnitude seja pequena.
 
 #### RQ04 Sistemas populares são atualizados com frequência?
 
@@ -337,27 +339,77 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 
 **Pontos críticos:**
 - **Cauda de inatividade:** 11,7% dos repositórios (117) não recebem push há mais de 1 ano, e 7,2% (72) há mais de 2 anos. O caso extremo é `prakhar1989/awesome-courses`, com 1.211 dias (~3,3 anos) sem push, embora ainda figure no top-1.000 com 70.691 estrelas. Isso demonstra que a popularidade no GitHub possui inércia: repositórios de conteúdo podem permanecer altamente estrelados mesmo sem manutenção ativa.
-- **Inatividade não correlacionada com popularidade:** a correlação entre estrelas e dias desde o último push é negativa e fraca (r ≈ −0,082), indicando que repos mais populares tendem a ser ligeiramente mais ativos, mas a relação é tênue. Repositórios inativos (>30 dias) possuem média de estrelas (62.180) comparável à dos ativos (68.308), sugerindo que a inatividade não é um forte preditor de perda de popularidade no curto prazo.
-- **Atualização vs. maturidade:** há uma correlação positiva fraca entre idade e dias desde o último push (r ≈ 0,112), o que é esperado: repositórios mais antigos tendem a ser ligeiramente mais estáveis e, portanto, com menos commits frequentes.
+- **Inatividade não custa popularidade:** repositórios parados há mais de 30 dias têm média de 62.180 estrelas, contra 68.308 dos ativos — uma diferença pequena. Deixar de receber commits, portanto, não derruba a popularidade no curto prazo.
 
 #### RQ05 Sistemas populares são escritos nas linguagens mais populares?
 
-**Não respondida.** A linguagem primária não foi coletada no CSV de repositórios.
+**Hipótese confirmada, com uma exceção relevante.** As linguagens da amostra concentram-se fortemente nas mais usadas do ecossistema: Python, TypeScript e JavaScript sozinhas respondem por **50,8%** dos 1.000 repositórios.
+
+| Linguagem | Repositórios | % |
+|---|---:|---:|
+| Python | 228 | 22,8% |
+| TypeScript | 171 | 17,1% |
+| JavaScript | 109 | 10,9% |
+| *(sem linguagem primária)* | 88 | 8,8% |
+| Go | 77 | 7,7% |
+| Rust | 58 | 5,8% |
+| C++ | 42 | 4,2% |
+| Java | 41 | 4,1% |
+| Jupyter Notebook | 24 | 2,4% |
+| C | 21 | 2,1% |
+| Shell | 20 | 2,0% |
+| Ruby | 13 | 1,3% |
+
+**Pontos críticos:**
+- **88 repositórios não têm linguagem primária** (8,8%) — o quarto maior "grupo" da amostra. Não é falha de coleta: são os repositórios de conteúdo (listas curadas, livros, roadmaps), que não são software. Um em cada onze itens do top-1.000 do GitHub não é código.
+- **Rust é a exceção à hipótese.** Com 58 repositórios (5,8%), aparece à frente de C++, Java e C — posição bem acima da que ocupa nos rankings gerais de uso. Popularidade no GitHub e uso na indústria não são a mesma coisa, e a RQ05 mede a primeira.
+- **A linguagem primária é uma só.** O GitHub a define por volume de bytes, então projetos polglotas aparecem sob um único rótulo. Um projeto com back-end em Go e front-end em TypeScript conta para apenas um dos dois.
 
 #### RQ06 Sistemas populares possuem um alto percentual de issues fechadas?
 
-**Não respondida.** O CSV não contém o total de issues nem a quantidade de issues fechadas.
+**Hipótese confirmada.** A razão agregada entre issues fechadas e total é de **87,14%**, e a mediana dos percentuais individuais, **87,54%**. As duas praticamente coincidem, o que indica que o resultado não depende de poucos repositórios grandes — é o comportamento geral da amostra.
+
+**Pontos críticos:**
+- **432 repositórios (43,2%) têm ao menos 90% das issues fechadas**, e o quartil inferior ainda está em 71,7%. Fechar issues é a norma, não a exceção.
+- **Mas 104 repositórios estão abaixo de 50%**, e o mínimo observado é 7,5%. A hipótese vale para a amostra como um todo, não para todo repositório individualmente.
+- **Fechada não significa resolvida.** A métrica conta como fechada qualquer issue encerrada, inclusive duplicadas, `wontfix` e faxina de bot. A RQB03 reforça a ressalva por outro caminho: apenas 20% a 28% das issues fechadas têm um Pull Request vinculado.
+- **44 repositórios têm issues desabilitadas** e foram excluídos do cálculo — contá-los como 0% confundiria "nenhuma issue fechada" com "nenhuma issue".
+- A conexão `issues` do GraphQL **não inclui pull requests**, ao contrário da API de busca usada nas questões bônus. É o comportamento correto para esta métrica.
 
 #### RQ07 Sistemas em linguagens mais populares recebem mais contribuição, lançam mais releases e são atualizados com mais frequência?
 
-**Não respondida.** A comparação exigiria, no mínimo, linguagem primária, pull requests aceitas e agrupamento das métricas por linguagem, que não estão disponíveis no arquivo.
+**Hipótese confirmada em parte: há diferença entre linguagens, mas ela não segue o ranking de popularidade.** A tabela abaixo cobre as 14 linguagens com ao menos 10 repositórios — abaixo desse piso, um grupo pequeno produziria números sem significado.
+
+| Linguagem | Repos | PRs aceitos (mediana) | Releases (média) | Dias desde o push (média) |
+|---|---:|---:|---:|---:|
+| Python | 228 | 535,5 | 119,46 | 112,44 |
+| TypeScript | 171 | 1.981,0 | 328,34 | 31,64 |
+| JavaScript | 109 | 617,0 | 141,01 | 137,52 |
+| *(sem linguagem)* | 88 | 129,5 | 5,88 | 284,93 |
+| Go | 77 | 1.961,0 | 206,92 | 56,61 |
+| Rust | 58 | 2.400,0 | 187,88 | 17,86 |
+| C++ | 42 | 1.202,0 | 324,76 | 72,62 |
+| Java | 41 | 948,0 | 83,37 | 119,12 |
+| Jupyter Notebook | 24 | 78,5 | 0,21 | 200,79 |
+| C | 21 | 294,0 | 71,76 | 87,43 |
+| Shell | 20 | 395,0 | 47,00 | 134,00 |
+| Ruby | 13 | 6.289,0 | 146,23 | 152,08 |
+| HTML | 11 | 232,0 | 0,45 | 114,91 |
+| Swift | 10 | 705,5 | 78,90 | 6,80 |
+
+**Pontos críticos:**
+- **A linguagem mais frequente não é a mais ativa.** Python lidera em número de repositórios (228), mas tem a **menor mediana de PRs aceitos** entre as linguagens de propósito geral (535,5) e uma das piores médias de recência (112 dias). Rust, com um quarto dos repositórios, tem mediana de 2.400 PRs e **17,86 dias** desde o último push.
+- **A separação real é por tipo de projeto, não por popularidade da linguagem.** Rust, Go e TypeScript — linguagens de infraestrutura e ferramentas — concentram os projetos mais ativos. Python e Jupyter Notebook reúnem muito material didático e de pesquisa, que atrai estrelas sem gerar contribuição contínua.
+- **Releases praticamente não existem em conteúdo.** Jupyter Notebook (0,21), HTML (0,45) e o grupo sem linguagem (5,88) confirmam, por outro ângulo, o achado da RQ03: a métrica de releases só faz sentido para software distribuído.
+- **Ruby é um alerta de amostra pequena.** A mediana de 6.289 PRs aceitos é a maior da tabela, mas vem de apenas 13 repositórios, entre eles `rails/rails`. O piso de 10 admitiu o grupo; o número de repositórios ao lado é o que impede a leitura ingênua.
+- O grupo *(sem linguagem)* aparece na tabela **de propósito**: com 284,93 dias desde o último push e quase nenhuma release, ele é a evidência mais limpa de que boa parte do topo do GitHub é conteúdo estático, não software vivo.
 
 #### 4.2.1 RQB01 Volume e taxa de aceitação de PRs (2022–2026)
 
 **Hipótese confirmada para o volume, refutada para a taxa de aceitação.** O volume de PRs criadas cresceu consistentemente de 535.174 (2022) para 1.262.393 (2026), um aumento de 135,9%. O volume de PRs aceitas também cresceu, de 379.790 para 698.534 (+83,9%), mas em ritmo inferior.
 
 **Pontos críticos:**
-- **Divergência volume vs. qualidade:** a taxa de aceitação permaneceu estável entre 70% e 71,6% de 2022 a 2024, caiu para 68,55% em 2025 e despencou para 55,33% em 2026. Essa queda de 15,64 pontos percentuais em um único ano é estatisticamente e praticamente significativa: indica que, em 2026, quase metade das PRs criadas foi rejeitada.
+- **Divergência volume vs. qualidade:** a taxa de aceitação permaneceu estável entre 70% e 71,6% de 2022 a 2024, caiu para 68,55% em 2025 e despencou para 55,33% em 2026. Essa queda de 15,64 pontos percentuais em um único ano é expressiva: indica que, em 2026, quase metade das PRs criadas foi rejeitada.
 - **Hipótese causal (IA):** o período 2022–2026 coincide com a popularização de ferramentas de IA generativa aplicadas a código (Copilot, Cursor, Claude Code, etc.). A hipótese plausível é que o aumento de PRs de baixa qualidade geradas ou auxiliadas por IA sem revisão humana adequada tenha inflacionado o numerador (PRs criadas) sem corresponder aumento equivalente no denominador (PRs aceitas). Essa interpretação é corroborada pela RQB02 (aumento do tamanho médio das PRs), mas não pela RQB03: os commits por issue permaneceram estáveis, o que indica commits maiores e não um número maior de iterações.
 - **Amostragem:** a amostra de PRs por ano cresceu de 5.771 (2022) para 7.043 (2026), um aumento de 22,0% bem inferior ao crescimento de 135,9% no universo de PRs criadas. Isso significa que a amostra de 2026 representa uma fração menor do universo do que em 2022, o que pode introduzir viés de seleção se a amostragem não for estratificada.
 
@@ -368,7 +420,7 @@ As conclusões abaixo referem-se exclusivamente à amostra de 1.000 registros do
 **Pontos críticos:**
 - **Volatilidade interanual:** após um pico de +33,0% em 2023, houve uma queda de −21,1% em 2024, seguida por saltos de +74,3% (2024→2025) e +12,9% (2025→2026). Essa volatilidade sugere que o fenômeno não é linear: 2024 pode ter representado uma correção temporária (possivelmente devido a mudanças nas políticas de review de projetos populares), enquanto 2025–2026 consolidou uma nova tendência de PRs maiores.
 - **Interpretação crítica:** PRs maiores não são necessariamente sinônimo de maior produtividade. Na engenharia de software, PRs grandes são associadas a maior dificuldade de review, maior probabilidade de introdução de defeitos e menor velocidade de merge. O fato de que o tamanho médio dobrou enquanto a taxa de aceitação despencou (RQB01) reforça a hipótese de que as ferramentas de IA podem estar incentivando contribuições menos granulares e, potencialmente, menos revisáveis.
-- **Amostra robusta:** com 7.043 PRs amostrados em 2026, o erro padrão da média é pequeno o suficiente para que as diferenças observadas sejam estatisticamente significativas.
+- **Amostra robusta:** foram amostradas entre 5.771 e 7.043 PRs por ano, volume suficiente para que as diferenças observadas entre os anos não sejam atribuíveis a variação da amostra.
 
 #### 4.2.3 RQB03 Commits por issue (2022–2026)
 
@@ -406,11 +458,15 @@ As inovações do grupo (Seção 3.6) acrescentam, ao restante do relatório, um
 
 ## 5. Conclusão
 
-A análise foi conduzida sobre 1.000 repositórios e utilizou as variáveis efetivamente presentes nos arquivos coletados. Para essa amostra, RQ01, RQ03 e RQ04 foram analisadas de forma descritiva; RQ02 foi parcialmente endereçada pelos dados agregados de PRs; RQ05, RQ06 e RQ07 não puderam ser respondidas por ausência dos atributos necessários. As RQB01, RQB02 e RQB03 foram respondidas com dados históricos dos 1.000 repositórios.
+A análise foi conduzida sobre 1.000 repositórios. **Todas as sete Questões de Pesquisa do enunciado foram respondidas**, assim como as duas de validação e as três bônus propostas pelo grupo.
+
+Sobre linguagem, issues e contribuição (RQ02, RQ05–RQ07), três resultados merecem destaque. A contribuição externa é expressiva — **4,27 milhões de pull requests aceitos** na amostra, com mediana de 773,5 por repositório — e o fechamento de issues é a norma, com razão agregada de **87,14%**. Já a RQ07 mostrou que **a diferença relevante entre grupos não é a popularidade da linguagem, e sim o tipo de projeto**: Rust, Go e TypeScript concentram os repositórios mais ativos, enquanto Python — a linguagem mais frequente da amostra — apresenta a menor mediana de PRs aceitos entre as de propósito geral, por reunir muito material didático e de pesquisa.
+
+O achado transversal do trabalho é que **8,8% do top-1.000 do GitHub não é software**: 88 repositórios sem linguagem primária, com 284,93 dias médios desde o último push e 5,88 releases em média. Eles distorcem simultaneamente a RQ03 (releases), a RQ04 (atualização) e a RQ07, e explicam boa parte da assimetria observada em todas as métricas. Qualquer leitura das RQ01–RQ07 que ignore essa segmentação subestima o quanto os projetos de código de fato entregam.
 
 Quanto à validação do pipeline de coleta: a execução real forneceu evidências favoráveis de que o pipeline percorre as páginas observadas sem repetir chamadas, respeita o encerramento indicado por `hasNextPage = false`, produz resultados idênticos em duas execuções nas mesmas condições observadas, e não registra chamadas redundantes nem retries em uma coleta normal sem falhas.
 
-Em relação às RQ01–RQ04, a amostra apresenta repositórios com idade mediana de 92 meses (~7,7 anos), mediana de 41 releases (55,5 se excluídos repos de conteúdo) e 72,8% de repositórios atualizados nos últimos 30 dias. Esses resultados indicam maturidade e atividade recente em boa parte da amostra, mas a correlação nula entre estrelas e idade (r ≈ 0,000) recomenda cautela ao generalizar que "popularidade implica maturidade". A grande variação nos totais de releases (skewness = 8,62) e a presença de 27,6% de repositórios sem releases, em grande parte explicada por repos de conteúdo, recomendam o uso da mediana junto da média e a segmentação por tipo de projeto.
+Em relação às RQ01–RQ04, a amostra apresenta repositórios com idade mediana de 92 meses (~7,7 anos), mediana de 41 releases (55,5 se excluídos repos de conteúdo) e 72,8% de repositórios atualizados nos últimos 30 dias. Esses resultados indicam maturidade e atividade recente em boa parte da amostra, mas a ausência de qualquer relação entre estrelas e idade recomenda cautela ao generalizar que "popularidade implica maturidade". A grande variação nos totais de releases e a presença de 27,6% de repositórios sem releases, em grande parte explicada por repos de conteúdo, recomendam o uso da mediana junto da média e a segmentação por tipo de projeto.
 
 As RQB01 e RQB02 revelam tendências preocupantes no ecossistema: o volume de PRs criadas cresceu 135,9% de 2022 a 2026, mas a taxa de aceitação caiu de ~71% para 55,33%, uma queda de 15,64 pontos percentuais. Paralelamente, o tamanho médio das PRs aceitas dobrou (+106,4%). Conjuntamente, esses achados sugerem que o aumento da contribuição externa não se traduziu em maior qualidade ou aceitação; ao contrário, pode indicar uma inflação de contribuições de baixa qualidade, possivelmente correlacionada à popularização de ferramentas de IA generativa. Essa hipótese, embora plausível, requer investigação causal adicional (ex.: análise do conteúdo das PRs rejeitadas) para ser confirmada.
 
